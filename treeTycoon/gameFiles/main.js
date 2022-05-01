@@ -82,6 +82,22 @@ function update() {
   if (controller.gameInput.left.active) player.move(-1, 0);
   if (controller.gameInput.right.active) player.move(1, 0);
 
+  player.handleCollisionWorld(
+    collideRectWorld(
+      game.world.width,
+      game.world.height,
+      game.player.pos.x,
+      game.player.pos.y,
+      game.player.width,
+      game.player.height,
+      game.player.vel.x,
+      game.player.vel.y,
+    ),
+    game.world.width,
+    game.world.height,
+  );
+  player.update();
+
   // camera
   display.camera.followObj(
     game.player.pos.x,
@@ -101,7 +117,20 @@ function update() {
 
   // clickables
   for (let clickable of game.clickables) {
-    clickable.checkMouseOver(controller.mouseX, controller.mouseY);
+    const visualDimensions = display.camera.getRectVisualDimensions(
+      clickable.pos.x,
+      clickable.pos.y,
+      clickable.width,
+      clickable.height,
+    );
+    clickable.checkMouseOver(
+      controller.mouseX,
+      controller.mouseY,
+      visualDimensions.visualX,
+      visualDimensions.visualY,
+      visualDimensions.visualWidth,
+      visualDimensions.visualHeight,
+    );
   }
 }
 

@@ -159,6 +159,17 @@ Display.Camera = class {
     this.zoomSpeed = zoomSpeed;
   }
 
+  getRectVisualDimensions(originalX, originalY, originalWidth, originalHeight) {
+    // returns the size and location that a rect appears to be based on camera zoom and offset
+    // used for accurate checking if mouse is hovering over clickables
+    let visualX = originalX - this.view.x - this.offset.x - this.zoom.x / 2;
+    let visualY = originalY - this.view.y - this.offset.y - this.zoom.y / 2;
+    let visualWidth = originalWidth - this.zoom.x / 2;
+    let visualHeight = originalHeight - this.zoom.y / 2;
+
+    return { visualX, visualY, visualWidth, visualHeight };
+  }
+
   followObj(objPosX, objPosY, objWidth, objHeight, gameWorldWidth, gameWorldHeight) {
     /*if (!this.offsetSet) {
       this.offset.x = -this.bufferCanvas.width / 4;

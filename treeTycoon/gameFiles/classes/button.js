@@ -17,8 +17,6 @@ class Button {
     this.actionRMB = actionRMB;
     this.actionMMB = actionMMB;
 
-    this.indexClickablesArray = null; // keeps track of its position inside of 'clickables' array stored by Game Class Instance to allow to update isHidden value
-
     this.pos = new Vector(x, y);
     this.width = width;
     this.height = height;
@@ -28,7 +26,6 @@ class Button {
 
     this.backgroundColor = defaultBackgroundColor;
     this.mouseOverBackgroundColor = mouseOverBackgroundColor;
-
     this.activeBackgroundColor = defaultBackgroundColor;
 
     this.isHidden = isHidden;
@@ -46,32 +43,34 @@ class Button {
     1: MMB
     2: RMB
     */
-
-    switch (event.button) {
-      case 0:
-        if (this.actionLMB) {
-          this.actionLMB();
-        }
-        break;
-      case 1:
-        if (this.actionMMB) {
-          this.actionMMB();
-        }
-        break;
-      case 2:
-        if (this.actionRMB) {
-          this.actionRMB();
-        }
+    if (this.isMouseOver) {
+      switch (event.button) {
+        case 0:
+          if (this.actionLMB) {
+            this.actionLMB();
+          }
+          break;
+        case 1:
+          if (this.actionMMB) {
+            this.actionMMB();
+          }
+          break;
+        case 2:
+          if (this.actionRMB) {
+            this.actionRMB();
+          }
+      }
     }
   }
 
-  checkMouseOver(mouseX, mouseY) {
+  checkMouseOver(mouseX, mouseY, thisVisualX, thisVisualY, thisVisualWidth, thisVisualHeight) {
     // method needs to be inside update to constantly check if is mouse over
+    // NOTE: need to use visual values that have been translated to account for camera movement, zoom instead of absolute ones
     if (
-      mouseX > this.pos.x &&
-      mouseX < this.pos.x + this.width &&
-      mouseY > this.pos.y &&
-      mouseY < this.pos.y + this.height
+      mouseX > thisVisualX &&
+      mouseX < thisVisualX + thisVisualWidth &&
+      mouseY > thisVisualY &&
+      mouseY < thisVisualY + thisVisualHeight
     ) {
       this.activeBackgroundColor = this.mouseOverBackgroundColor;
       this.isMouseOver = true;

@@ -5,18 +5,19 @@ class Button {
     width,
     height,
     isHidden,
-    text = 'untitled',
+    text = '',
     textColor = 'white',
     defaultBackgroundColor = 'green',
     mouseOverBackgroundColor = 'darkgreen',
-    actionRMB = null,
     actionLMB = null,
     actionMMB = null,
+    actionRMB = null,
   ) {
     this.actionLMB = actionLMB;
     this.actionRMB = actionRMB;
     this.actionMMB = actionMMB;
 
+    // if button is in a contextMenu, initial x,y is irrelevant because it will be changed by the contextMenu once the contextMenu is shown
     this.pos = new Vector(x, y);
     this.width = width;
     this.height = height;
@@ -24,7 +25,7 @@ class Button {
     this.text = text;
     this.textColor = textColor;
 
-    this.backgroundColor = defaultBackgroundColor;
+    this.defaultBackgroundColor = defaultBackgroundColor;
     this.mouseOverBackgroundColor = mouseOverBackgroundColor;
     this.activeBackgroundColor = defaultBackgroundColor;
 
@@ -32,18 +33,23 @@ class Button {
     this.isMouseOver = false;
   }
 
-  toggleHidden() {
-    this.isHidden = !this.isHidden;
+  show() {
+    this.isHidden = false;
+  }
+
+  hide() {
+    this.isHidden = true;
   }
 
   onMouseDown(event) {
     /*
+    'event' parameter contains 'mousedown' event
     buttons:
     0: LMB
     1: MMB
     2: RMB
     */
-    if (this.isMouseOver) {
+    if (this.isMouseOver && !this.isHidden) {
       switch (event.button) {
         case 0:
           if (this.actionLMB) {
@@ -80,5 +86,13 @@ class Button {
       this.isMouseOver = false;
       return false;
     }
+  }
+
+  copyRectDimensions(x, y, width, height) {
+    // used to follow a given object and match size to allow for buttons to be overlayed onto normal game objects to add clickable functionality
+    this.pos.x = x;
+    this.pos.y = y;
+    this.width = width;
+    this.height = height;
   }
 }

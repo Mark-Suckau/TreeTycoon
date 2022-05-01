@@ -44,44 +44,9 @@ class Display {
     this.camera.bufferCanvas = this.buffer.canvas;
   }
 
-  strokeRect(x, y, w, h, color, lineWidth) {
-    // add lineJoin for rounded edges
-    this.buffer.lineWidth = lineWidth;
-    this.buffer.strokeStyle = color;
-    this.buffer.strokeRect(x, y, w, h);
-  }
-
   fillRect(x, y, w, h, color) {
-    // NOTE: if color is left as undefined, the color used from last function call will be reused
-    if (!color) {
-      console.error('No color specified');
-    }
     this.buffer.fillStyle = color;
     this.buffer.fillRect(x, y, w, h);
-  }
-
-  drawRectWithOutlineOutside(x, y, w, h, color, outlineColor, outlineWidth) {
-    this.fillRect(x, y, w, h, color);
-    this.strokeRect(
-      x - outlineWidth + outlineWidth / 2,
-      y - outlineWidth + outlineWidth / 2,
-      w + outlineWidth,
-      h + outlineWidth,
-      outlineColor,
-      outlineWidth,
-    );
-  }
-
-  drawRectWithOutlineInside(x, y, w, h, color, outlineColor, outlineWidth) {
-    this.fillRect(x, y, w, h, color);
-    this.strokeRect(
-      x + outlineWidth / 2,
-      y + outlineWidth / 2,
-      w - outlineWidth,
-      h - outlineWidth,
-      outlineColor,
-      outlineWidth,
-    );
   }
 
   drawRectTrail(history) {

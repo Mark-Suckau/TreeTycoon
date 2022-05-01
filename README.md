@@ -8,7 +8,13 @@ Comment Tags:
 ## CLICKABLES
 
 All clickables must have the following:
--onMouseDown method
--checkMouseOver method
+-onMouseDown() method
+-checkMouseOver() method
 -isHidden boolean
 -isMouseOver boolean
+-hide() method
+-show() method
+
+## Dependant Systems
+
+-ContextMenu, Button

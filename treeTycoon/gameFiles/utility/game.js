@@ -2,12 +2,18 @@ class Game {
   constructor(player, world) {
     this.player = player;
     this.world = world;
-    this.clickables = [];
+    this.clickables = {
+      buttons: [],
+      contextMenus: [],
+    };
   }
   loadWorld(world) {
     this.world = world;
   }
-  addClickable(clickable) {
-    return this.clickables.push(clickable);
+  addButton(button) {
+    return this.clickables.buttons.push(button);
+  }
+  addContextMenu(contextMenu) {
+    return this.clickables.contextMenus.push(contextMenu);
   }
 }

@@ -31,3 +31,11 @@ All clickables must have the following:
   Used for buttons seperated from game canvas but not in a contextMenu (ex. save, sell buttons)
 - contextMenuButton
   Used for buttons seperated from game canvas inside of a contextMenu which is usually triggered through a right click on some clickable object (that object being clickable because there's an overlay button ontop of it that is transparent)
+
+### Priority of Buttons
+
+- **Priority indicates when a button will have mouseOver instead of another button if the buttons are layered ontop of eachother**
+- contextMenuButton > standaloneButton > overlayButton
+- for contextMenuButtons it depends on which contextMenu was opened last to choose which contextMenuButton receives priority for mouseOver (if there are other contextMenus below the last opened one, only the last opened one will have mouseOver)
+- for standaloneButtons if they are layered, both will be clickable (bug)
+- for overlayButtons if they are layered, both will be clickable (bug)

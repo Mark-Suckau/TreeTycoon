@@ -1,42 +1,42 @@
 Classes:
 1.Game
-  -contains main loop which is ultimately executed in function draw() to keep organization
+  - contains main loop which is ultimately executed in function draw() to keep organization
 2.Player
-  -movement
-  -health (damaged by insects)
-  -inventory (+weapon slot) (open and display items using ContextMenu for graphics)
-  -plant Tree
-  -harvest tree
-  -attack Insect using Weapon
-  -collision with certain tiles (ex. walls, trees, etc.)
+  - movement
+  - health (damaged by insects)
+  - inventory (+weapon slot) (open and display items using ContextMenu for graphics)
+  - plant Tree
+  - harvest tree
+  - attack Insect using Weapon
+  - collision with certain tiles (ex. walls, trees, etc.)
 3.Controller
-  -take inputs
+  - take inputs
 4.Seed
-  -tree type grown
-  -cost
+  - tree type grown
+  - cost
 5.Tree
-  -age
-  -wood type, quantity dropped on harvest
-  -health (damaged by insects)
+  - age
+  - wood type, quantity dropped on harvest
+  - health (damaged by insects)
 6.Wood
-  -wood value on sell
+  - wood value on sell
 7.Tile
-  -isTreePlantable?
+  - isTreePlantable?
 8.Level
-  -2d array containing all tiles for map
+  - 2d array containing all tiles for map
 9.Weapon
-  -damage (equipped by player)
+  - damage (equipped by player)
 10.Button
-  -name
-  -width
-  -height
-  -action (callback to function)
+  - name
+  - width
+  - height
+  - action (callback to function)
 11.ContextMenu
-  -totalHeight OR buttonHeight
-  -totalWidth OR buttonWidth
-  -used when right clicking to ex. equip weapon from inventory to display list of items
-  -contains and displays array of clickable buttons each with an action (callback) for onclick
-  -each item that can be right clicked stores its own ContextMenu instance
+  - totalHeight OR buttonHeight
+  - totalWidth OR buttonWidth
+  - used when right clicking to ex. equip weapon from inventory to display list of items
+  - contains and displays array of clickable buttons each with an action (callback) for onclick
+  - each item that can be right clicked stores its own ContextMenu instance
   and once that item is right clicked inside inventory it displays it's ContextMenu
 12.Insect
   -health
@@ -48,8 +48,10 @@ Seed type -> Tree type -> Wood type
 ContextMenu container for list of Buttons
 
 BUGS:
--when zoomed in or out detection for mouse on buttons is innaccurate (fix should be done inside of display.camera.getRectVisualDimensions)
--when panning and then attempting to right click to spawn a contextmenu, the contextmenu is at wrong position due to camera movement
+- when zoomed in or out detection for mouse on buttons is innaccurate (fix should be done inside of display.camera.getRectVisualDimensions)
+- when standaloneButtons are layered multiple are clickable
+- when overlayButtons are layered multiple are clickable
 
 FUTURE FEATURES:
--convert files to modules for cleaner importing
+- convert files to modules for cleaner importing
+- reduce size of main.js by breaking into multiple files

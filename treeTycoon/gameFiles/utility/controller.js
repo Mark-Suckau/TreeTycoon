@@ -3,6 +3,9 @@ class Controller {
     this.mouseX = 0; // needs to be updated via eventlistener mousemove
     this.mouseY = 0;
 
+    //this.gameMouseX = 0; // translated position of mouse to match ingame world instead of normal canvas
+    //this.gameMouseY = 0; // needs to be updated at same time as normal mouseX, mouseY
+
     this.gameInput = {
       up: new Controller.ButtonInput('w'),
       left: new Controller.ButtonInput('a'),

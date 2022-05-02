@@ -20,3 +20,14 @@ All clickables must have the following:
 - show() _method_
 - indexInContextMenu _interger_ (contextMenus need to contain an 'indexInContextMenu' interger since they can be nested inside of other contextMenus)
 - nestedContextMenus _array_ (buttons need to contain a 'nestedContextMenus' array too, to allow the contextMenu the button is inside to add the list of contextMenus openable by this button to its own nestedContextMenus array)
+
+### Different Types of Buttons
+
+(All from same class)
+
+- overlayButton
+  Used to overlay ontop of normal game objects (ex. player, tree) to make them clickable (usually these buttons are transparent so the actual game object it's overlaying stays visible)
+- standaloneButton
+  Used for buttons seperated from game canvas but not in a contextMenu (ex. save, sell buttons)
+- contextMenuButton
+  Used for buttons seperated from game canvas inside of a contextMenu which is usually triggered through a right click on some clickable object (that object being clickable because there's an overlay button ontop of it that is transparent)

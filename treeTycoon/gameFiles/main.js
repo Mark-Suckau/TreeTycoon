@@ -49,7 +49,9 @@ const overlayButton = {
     'px',
     'sans-serif',
     [contextMenus.player.contextMenu],
-    () => {},
+    () => {
+      console.log('LMBOverlayButton');
+    },
     () => {},
     () => {
       contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
@@ -164,7 +166,7 @@ function loadClickables() {
 
   // BUTTONS
   // overlay buttons
-  game.addStandaloneButton(overlayButton.player);
+  game.addOverlayButton(overlayButton.player);
 
   // context menu buttons
   for (let button of contextMenuButtons.player.buttons) {
@@ -218,6 +220,9 @@ document.addEventListener(
     // it hides itself again causing it to seem like it never appeared but actually it just very briefly appeared and then dissapeared within one frame
     for (let contextMenu of game.clickables.contextMenus) {
       contextMenu.onMouseDown(event);
+    }
+    for (let button of game.clickables.overlayButtons) {
+      button.onMouseDown(event);
     }
     for (let button of game.clickables.standaloneButtons) {
       button.onMouseDown(event);
@@ -274,19 +279,13 @@ function update() {
   let mouseOverContextMenus = []; // keeps track of all not hidden context menus in this frame that have the mouse over them
   for (let contextMenu of game.clickables.contextMenus) {
     if (!contextMenu.isHidden) {
-      const visualDimensions = display.camera.getRectVisualDimensions(
+      contextMenu.checkMouseOver(
+        controller.mouseX,
+        controller.mouseY,
         contextMenu.pos.x,
         contextMenu.pos.y,
         contextMenu.width,
         contextMenu.height,
-      );
-      contextMenu.checkMouseOver(
-        controller.mouseX,
-        controller.mouseY,
-        visualDimensions.visualX,
-        visualDimensions.visualY,
-        visualDimensions.visualWidth,
-        visualDimensions.visualHeight,
       );
       if (contextMenu.isMouseOver) {
         mouseOverContextMenus.push(contextMenu);
@@ -323,19 +322,13 @@ function update() {
   for (let button of game.clickables.contextMenuButtons) {
     // NOTE: contextMenu must have mouseOver in order for this button to check if it itself has mouseOver
     if (!button.isHidden && button.contextMenu.isMouseOver) {
-      const visualDimensions = display.camera.getRectVisualDimensions(
+      button.checkMouseOver(
+        controller.mouseX,
+        controller.mouseY,
         button.pos.x,
         button.pos.y,
         button.width,
         button.height,
-      );
-      button.checkMouseOver(
-        controller.mouseX,
-        controller.mouseY,
-        visualDimensions.visualX,
-        visualDimensions.visualY,
-        visualDimensions.visualWidth,
-        visualDimensions.visualHeight,
       );
       button.confirmMouseOver(button.isMouseOver);
     } else {
@@ -343,6 +336,22 @@ function update() {
     }
   }
   for (let button of game.clickables.standaloneButtons) {
+    // NOTE: contextMenu must have mouseOver in order for this button to check if it itself has mouseOver
+    if (!button.isHidden) {
+      button.checkMouseOver(
+        controller.mouseX,
+        controller.mouseY,
+        button.pos.x,
+        button.pos.y,
+        button.width,
+        button.height,
+      );
+      button.confirmMouseOver(button.isMouseOver);
+    } else {
+      button.confirmMouseOver(false);
+    }
+  }
+  for (let button of game.clickables.overlayButtons) {
     // NOTE: all contextMenus take prescedence over all standaloneButtons,
     // meaning if a contextMenu and a standaloneButton both have mouseOver,
     // the standaloneButton will have mouseOver set to false
@@ -384,8 +393,7 @@ function render() {
     'white',
   );
 
-  // clickables
-  for (let button of game.clickables.allButtons) {
+  for (let button of game.clickables.overlayButtons) {
     if (!button.isHidden) {
       if (!button.activeColor) {
         console.error('No active color set for button', button);
@@ -478,6 +486,100 @@ function render() {
   }
 
   display.render();
+  // clickables
+  // these are displayed the same because they both need to be seperated from the game canvas
+  // displayed directly on the display canvas
+  for (let button of game.clickables.contextMenuAndStandaloneButtons) {
+    if (!button.isHidden) {
+      if (!button.activeColor) {
+        console.error('No active color set for button', button);
+      }
+      if (button.isOutlinedInside) {
+        if (!button.outlineColor || !button.outlineWidth) {
+          console.error('No outlineColor or outlineWidth set for button', button);
+        }
+        display.drawRectWithOutlineInsideCanvas(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+          button.outlineColor,
+          button.outlineWidth,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillTextCanvas(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width - button.outlineWidth,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      } else if (button.isOutlinedOutside) {
+        if (!button.outlineColor || !button.outlineWidth) {
+          console.error('No outlineColor or outlineWidth set for button', button);
+        }
+        display.displayRectWithOutlineOutsideCanvas(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+          button.outlineColor,
+          button.outlineWidth,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillTextCanvas(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      } else {
+        // if neither outline outside or inside are true then normal rect without outline
+        display.fillRectCanvas(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillTextCanvas(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width - button.outlineWidth,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      }
+    }
+  }
 }
 function gameLoop() {
   update();

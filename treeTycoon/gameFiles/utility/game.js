@@ -3,7 +3,8 @@ class Game {
     this.player = player;
     this.world = world;
     this.clickables = {
-      allButtons: [],
+      overlayButtons: [],
+      contextMenuAndStandaloneButtons: [],
       standaloneButtons: [],
       contextMenuButtons: [],
       contextMenus: [],
@@ -19,13 +20,17 @@ class Game {
     this.world = world;
   }
 
+  addOverlayButton(button) {
+    return this.clickables.overlayButtons.push(button);
+  }
+
   addStandaloneButton(button) {
-    this.clickables.allButtons.push(button);
+    this.clickables.contextMenuAndStandaloneButtons.push(button);
     return this.clickables.standaloneButtons.push(button);
   }
 
   addContextMenuButton(button) {
-    this.clickables.allButtons.push(button);
+    this.clickables.contextMenuAndStandaloneButtons.push(button);
     return this.clickables.contextMenuButtons.push(button);
   }
 

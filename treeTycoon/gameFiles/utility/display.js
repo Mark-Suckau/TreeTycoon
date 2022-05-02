@@ -128,6 +128,95 @@ class Display {
     this.buffer.strokeText(text, x, y, maxWidth);
   }
 
+  // DIRECTLY TO CANVAS
+  strokeRectCanvas(x, y, w, h, color, lineWidth) {
+    // draws directly to display canvas instead of game canvas
+    // add lineJoin for rounded edges
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.strokeStyle = color;
+    this.ctx.strokeRect(x, y, w, h);
+  }
+
+  // DIRECTLY TO CANVAS
+  fillRectCanvas(x, y, w, h, color) {
+    // draws directly to display canvas instead of game canvas
+    // NOTE: if color is left as undefined, the color used from last function call will be reused
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(x, y, w, h);
+  }
+
+  // DIRECTLY TO CANVAS
+  drawRectWithOutlineOutsideCanvas(x, y, w, h, color, outlineColor, outlineWidth) {
+    // draws directly to display canvas instead of game canvas
+    // NOTE: if color is left as undefined, the color used from last function call will be reused
+    this.fillRectCanvas(x, y, w, h, color);
+    this.strokeRectCanvas(
+      x - outlineWidth + outlineWidth / 2,
+      y - outlineWidth + outlineWidth / 2,
+      w + outlineWidth,
+      h + outlineWidth,
+      outlineColor,
+      outlineWidth,
+    );
+  }
+
+  // DIRECTLY TO CANVAS
+  drawRectWithOutlineInsideCanvas(x, y, w, h, color, outlineColor, outlineWidth) {
+    // draws directly to display canvas instead of game canvas
+    // NOTE: if color is left as undefined, the color used from last function call will be reused
+    this.fillRectCanvas(x, y, w, h, color);
+    this.strokeRectCanvas(
+      x + outlineWidth / 2,
+      y + outlineWidth / 2,
+      w - outlineWidth,
+      h - outlineWidth,
+      outlineColor,
+      outlineWidth,
+    );
+  }
+
+  // DIRECTLY TO CANVAS
+  fillTextCanvas(
+    text,
+    x,
+    y,
+    maxWidth,
+    color,
+    fontSize,
+    fontSizeUnit,
+    fontFamily,
+    textAlign,
+    textBaseline,
+  ) {
+    // draws directly to display canvas instead of game canvas
+    this.ctx.fillStyle = color;
+    this.ctx.font = fontSize + fontSizeUnit + ' ' + fontFamily; // ex. 10px sans-serif
+    this.ctx.textAlign = textAlign;
+    this.ctx.textBaseline = textBaseline;
+    this.ctx.fillText(text, x, y, maxWidth);
+  }
+
+  // DIRECTLY TO CANVAS
+  strokeTextCanvas(
+    text,
+    x,
+    y,
+    maxWidth,
+    color,
+    fontSize,
+    fontSizeUnit,
+    fontFamily,
+    textAlign,
+    textBaseline,
+  ) {
+    // draws directly to display canvas instead of game canvas
+    this.ctx.strokeStyle = color;
+    this.ctx.font(fontSize + fontSizeUnit + ' ' + fontFamily); // ex. 10px sans-serif
+    this.ctx.textAlign(textAlign);
+    this.ctx.textBaseline(textBaseline);
+    this.ctx.strokeText(text, x, y, maxWidth);
+  }
+
   background(gameBackgroundColor, canvasBackgroundColor) {
     //ADD BACKGROUND TO ANYTHING OUTSIDE OF GAME WORLD // WARNING TEST
 
@@ -230,6 +319,16 @@ Display.Camera = class {
     this.zoomChange(zoomX, zoomY);
     this.zoomSpeed = zoomSpeed;
   }
+
+  /*getPointGameDimensions(originalX, originalY) {
+    // returns point where a point from normal canvas appears to be on game canvas
+    // used for translating mouse position from canvas to game world
+
+    let gameX = originalX + this.view.x + this.offset.x + this.zoom / 2;
+    let gameY = originalY + this.view.y + this.offset.y + this.zoom / 2;
+
+    return { gameX, gameY };
+  }*/
 
   getRectVisualDimensions(originalX, originalY, originalWidth, originalHeight) {
     // returns the size and location that a rect appears to be based on camera zoom and offset

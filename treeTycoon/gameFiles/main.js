@@ -17,6 +17,15 @@ function switchWorld(world) {
 // CLICKABLES
 // contains buttons, contextmenus which are either standalone or will be attached to an object inside of main.js
 
+// contextMenus containing buttons (need to be initialized before buttons to allow buttons to reference them, buttons are added in loadClickables)
+const contextMenus = {
+  player: {
+    contextMenu: new ContextMenu(100, 50),
+  },
+  test1: {
+    contextMenu: new ContextMenu(90, 50),
+  },
+};
 // buttons not in a contextMenu or as an overlay
 const standardButton = {}; // NOTE: currently unused could be good idea in future for general menu
 // buttons that will be overlayed ontop of normal game objects to make them clickable
@@ -28,14 +37,22 @@ const overlayButton = {
     100,
     50,
     false,
-    '',
-    'white',
     'black',
     'green',
+    false,
+    false,
+    'rgb(100, 255, 100)',
+    15,
+    '',
+    'white',
+    0,
+    'px',
+    'sans-serif',
+    [contextMenus.player.contextMenu],
     () => {},
     () => {},
     () => {
-      contextMenus.player.contextMenu.show(100, 100);
+      contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
   ),
 };
@@ -48,10 +65,18 @@ const contextMenuButtons = {
         50,
         50,
         true,
-        'test',
-        'rgb(255, 0, 0)',
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        50,
+        'px',
+        'sans-serif',
+        [contextMenus.test1.contextMenu],
         () => {
           console.log('LMB');
         },
@@ -59,8 +84,14 @@ const contextMenuButtons = {
           console.log('MMB');
         },
         () => {
+          contextMenus.test1.contextMenu.show(
+            controller.mouseX,
+            controller.mouseY,
+            game.frameCount,
+          );
           console.log('RMB');
         },
+        contextMenus.player.contextMenu,
       ),
       new Button(
         0,
@@ -68,10 +99,18 @@ const contextMenuButtons = {
         50,
         50,
         true,
-        'test',
-        'rgb(255, 0, 0)',
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        10,
+        'px',
+        'sans-serif',
+        [],
         () => {
           console.log('LMB2');
         },
@@ -81,26 +120,67 @@ const contextMenuButtons = {
         () => {
           console.log('RMB2');
         },
+        contextMenus.player.contextMenu,
+      ),
+    ],
+  },
+  test1: {
+    buttons: [
+      new Button(
+        0,
+        0,
+        50,
+        50,
+        true,
+        'rgb(255, 255, 255)',
+        'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        50,
+        'px',
+        'sans-serif',
+        [],
+        () => {
+          console.log('LMB3');
+        },
+        () => {
+          console.log('MMB3');
+        },
+        () => {
+          console.log('RMB3');
+        },
+        contextMenus.test1.contextMenu,
       ),
     ],
   },
 };
-// contextMenus containing buttons
-const contextMenus = {
-  player: {
-    contextMenu: new ContextMenu(100, 50, true, contextMenuButtons.player.buttons),
-  },
-};
 
-function loadClickablesToGame() {
+function loadClickables() {
   // loads clickables from different objects
-  game.addButton(overlayButton.player);
+
+  // BUTTONS
+  // overlay buttons
+  game.addStandaloneButton(overlayButton.player);
+
+  // context menu buttons
   for (let button of contextMenuButtons.player.buttons) {
-    game.addButton(button);
+    game.addContextMenuButton(button);
+    contextMenus.player.contextMenu.addButton(button);
   }
+  for (let button of contextMenuButtons.test1.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.test1.contextMenu.addButton(button);
+  }
+
+  // CONTEXT MENUS
+  game.addContextMenu(contextMenus.test1.contextMenu);
   game.addContextMenu(contextMenus.player.contextMenu);
 }
-loadClickablesToGame();
+loadClickables();
 
 // controller
 document.addEventListener(
@@ -139,7 +219,7 @@ document.addEventListener(
     for (let contextMenu of game.clickables.contextMenus) {
       contextMenu.onMouseDown(event);
     }
-    for (let button of game.clickables.buttons) {
+    for (let button of game.clickables.standaloneButtons) {
       button.onMouseDown(event);
     }
   },
@@ -169,9 +249,6 @@ function update() {
   );
   player.update();
 
-  // button overlays
-  overlayButton.player.copyRectDimensions(player.pos.x, player.pos.y, player.width, player.height);
-
   // camera
   display.camera.followObj(
     game.player.pos.x,
@@ -189,7 +266,12 @@ function update() {
   if (controller.camControls.zoomIn.active) display.camera.zoomChange(1, 1);
   if (controller.camControls.zoomOut.active) display.camera.zoomChange(-1, -1);
 
-  // clickables
+  // CLICKABLES START
+  // button overlays
+  overlayButton.player.copyRectDimensions(player.pos.x, player.pos.y, player.width, player.height);
+
+  // checkMouseOver for context menus
+  let mouseOverContextMenus = []; // keeps track of all not hidden context menus in this frame that have the mouse over them
   for (let contextMenu of game.clickables.contextMenus) {
     if (!contextMenu.isHidden) {
       const visualDimensions = display.camera.getRectVisualDimensions(
@@ -206,10 +288,41 @@ function update() {
         visualDimensions.visualWidth,
         visualDimensions.visualHeight,
       );
+      if (contextMenu.isMouseOver) {
+        mouseOverContextMenus.push(contextMenu);
+      }
+    } else {
+      contextMenu.confirmMouseOver(false);
     }
   }
-  for (let button of game.clickables.buttons) {
-    if (!button.isHidden) {
+  // removes conflicts of mutliple contextMenus having isMouseOver true at same time and chooses the most recently opened one
+  // if there is not more than 1 active contextMenus with mouseOver, this is not needed
+  if (mouseOverContextMenus.length > 1) {
+    let mostRecentContextMenu = mouseOverContextMenus[0];
+    let mostRecentContextMenuIndex = 0;
+    for (let i = 0; i < mouseOverContextMenus.length; i++) {
+      if (mouseOverContextMenus[i].shownSinceFrame > mostRecentContextMenu.shownSinceFrame) {
+        mostRecentContextMenu = mouseOverContextMenus[i];
+        mostRecentContextMenuIndex = i;
+      }
+      // removes contextMenu that should stay selected, then changes isMouseOver for all other contextMenus to false
+      mouseOverContextMenus.splice(mostRecentContextMenuIndex, 1);
+      mostRecentContextMenu.confirmMouseOver(true);
+
+      for (let contextMenu of mouseOverContextMenus) {
+        contextMenu.confirmMouseOver(false);
+      }
+    }
+  } else {
+    for (let contextMenu of game.clickables.contextMenus) {
+      // keep isMouseOver unchanged if there are no conflicts
+      contextMenu.confirmMouseOver(contextMenu.isMouseOver);
+    }
+  }
+  // checkMouseOver for buttons
+  for (let button of game.clickables.contextMenuButtons) {
+    // NOTE: contextMenu must have mouseOver in order for this button to check if it itself has mouseOver
+    if (!button.isHidden && button.contextMenu.isMouseOver) {
       const visualDimensions = display.camera.getRectVisualDimensions(
         button.pos.x,
         button.pos.y,
@@ -224,8 +337,39 @@ function update() {
         visualDimensions.visualWidth,
         visualDimensions.visualHeight,
       );
+      button.confirmMouseOver(button.isMouseOver);
+    } else {
+      button.confirmMouseOver(false);
     }
   }
+  for (let button of game.clickables.standaloneButtons) {
+    // NOTE: all contextMenus take prescedence over all standaloneButtons,
+    // meaning if a contextMenu and a standaloneButton both have mouseOver,
+    // the standaloneButton will have mouseOver set to false
+    if (!button.isHidden && mouseOverContextMenus.length == 0) {
+      const visualDimensions = display.camera.getRectVisualDimensions(
+        button.pos.x,
+        button.pos.y,
+        button.width,
+        button.height,
+      );
+      button.checkMouseOver(
+        controller.mouseX,
+        controller.mouseY,
+        visualDimensions.visualX,
+        visualDimensions.visualY,
+        visualDimensions.visualWidth,
+        visualDimensions.visualHeight,
+      );
+      button.confirmMouseOver(button.isMouseOver);
+    } else {
+      button.confirmMouseOver(false);
+    }
+  }
+
+  // CLICKABLES END
+
+  game.updateFrameCount();
 }
 
 function render() {
@@ -241,21 +385,100 @@ function render() {
   );
 
   // clickables
-  for (let button of game.clickables.buttons) {
+  for (let button of game.clickables.allButtons) {
     if (!button.isHidden) {
-      display.fillRect(
-        button.pos.x,
-        button.pos.y,
-        button.width,
-        button.height,
-        button.activeBackgroundColor,
-      );
+      if (!button.activeColor) {
+        console.error('No active color set for button', button);
+      }
+      if (button.isOutlinedInside) {
+        if (!button.outlineColor || !button.outlineWidth) {
+          console.error('No outlineColor or outlineWidth set for button', button);
+        }
+        display.drawRectWithOutlineInside(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+          button.outlineColor,
+          button.outlineWidth,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillText(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width - button.outlineWidth,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      } else if (button.isOutlinedOutside) {
+        if (!button.outlineColor || !button.outlineWidth) {
+          console.error('No outlineColor or outlineWidth set for button', button);
+        }
+        display.displayRectWithOutlineOutside(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+          button.outlineColor,
+          button.outlineWidth,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillText(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      } else {
+        // if neither outline outside or inside are true then normal rect without outline
+        display.fillRect(
+          button.pos.x,
+          button.pos.y,
+          button.width,
+          button.height,
+          button.activeColor,
+        );
+
+        // display text
+        if (button.text) {
+          display.fillText(
+            button.text,
+            button.pos.x + button.width / 2,
+            button.pos.y + button.height / 2,
+            button.width - button.outlineWidth,
+            button.textColor,
+            button.textSize,
+            button.textSizeUnit,
+            button.textFontFamily,
+            'center',
+            'middle',
+          );
+        }
+      }
     }
   }
 
   display.render();
 }
-
 function gameLoop() {
   update();
   render();

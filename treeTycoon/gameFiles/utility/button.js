@@ -5,13 +5,22 @@ class Button {
     width,
     height,
     isHidden,
+    defaultColor = 'darkgreen',
+    mouseOverColor = 'green',
+    isOutlinedInside = false, // NOTE: only one or the other should be set as true, if both are true, outlineInside will be used
+    isOutlinedOutside = false,
+    outlineColor = '',
+    outlineWidth = '',
     text = '',
-    textColor = 'white',
-    defaultBackgroundColor = 'green',
-    mouseOverBackgroundColor = 'darkgreen',
+    textColor = '',
+    textSize = 10,
+    textSizeUnit = 'px',
+    textFontFamily = 'sans-serif',
+    nestedContextMenus = [],
     actionLMB = null,
     actionMMB = null,
     actionRMB = null,
+    contextMenu = null,
   ) {
     this.actionLMB = actionLMB;
     this.actionRMB = actionRMB;
@@ -24,13 +33,26 @@ class Button {
 
     this.text = text;
     this.textColor = textColor;
+    this.textSize = textSize;
+    this.textSizeUnit = textSizeUnit;
+    this.textFontFamily = textFontFamily;
 
-    this.defaultBackgroundColor = defaultBackgroundColor;
-    this.mouseOverBackgroundColor = mouseOverBackgroundColor;
-    this.activeBackgroundColor = defaultBackgroundColor;
+    this.defaultColor = defaultColor;
+    this.mouseOverColor = mouseOverColor;
+    this.activeColor = defaultColor;
 
+    this.outlineColor = outlineColor;
+    this.outlineWidth = outlineWidth;
+
+    this.isOutlinedInside = isOutlinedInside; // if outline should be inside main rect
+    this.isOutlinedOutside = isOutlinedOutside; // if outline should be outside main rect
     this.isHidden = isHidden;
     this.isMouseOver = false;
+
+    this.contextMenu = contextMenu;
+    this.nestedContextMenus = nestedContextMenus; // array of contextMenus that this button can open
+    // variable used by contextMenus to keep track of buttons contained inside to allow for easier deletion
+    this.indexInContextMenu = -1; // starts as -1 since that is not a valid number to avoid accidental deletion of wrong index
   }
 
   show() {
@@ -72,19 +94,31 @@ class Button {
   checkMouseOver(mouseX, mouseY, thisVisualX, thisVisualY, thisVisualWidth, thisVisualHeight) {
     // method needs to be inside update to constantly check if is mouse over
     // NOTE: need to use visual values that have been translated to account for camera movement, zoom instead of absolute ones
+    if (this.isHidden) {
+      this.isMouseOver = false;
+      return false;
+    }
     if (
       mouseX > thisVisualX &&
       mouseX < thisVisualX + thisVisualWidth &&
       mouseY > thisVisualY &&
       mouseY < thisVisualY + thisVisualHeight
     ) {
-      this.activeBackgroundColor = this.mouseOverBackgroundColor;
       this.isMouseOver = true;
       return true;
     } else {
-      this.activeBackgroundColor = this.defaultBackgroundColor;
       this.isMouseOver = false;
       return false;
+    }
+  }
+
+  confirmMouseOver(isMouseOver) {
+    // used to resolve conflicts between multiple buttons having mouseOver at same time
+    this.isMouseOver = isMouseOver;
+    if (this.isMouseOver) {
+      this.activeColor = this.mouseOverColor;
+    } else {
+      this.activeColor = this.defaultColor;
     }
   }
 

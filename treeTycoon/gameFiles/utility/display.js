@@ -53,14 +53,12 @@ class Display {
 
   fillRect(x, y, w, h, color) {
     // NOTE: if color is left as undefined, the color used from last function call will be reused
-    if (!color) {
-      console.error('No color specified');
-    }
     this.buffer.fillStyle = color;
     this.buffer.fillRect(x, y, w, h);
   }
 
   drawRectWithOutlineOutside(x, y, w, h, color, outlineColor, outlineWidth) {
+    // NOTE: if color is left as undefined, the color used from last function call will be reused
     this.fillRect(x, y, w, h, color);
     this.strokeRect(
       x - outlineWidth + outlineWidth / 2,
@@ -73,6 +71,7 @@ class Display {
   }
 
   drawRectWithOutlineInside(x, y, w, h, color, outlineColor, outlineWidth) {
+    // NOTE: if color is left as undefined, the color used from last function call will be reused
     this.fillRect(x, y, w, h, color);
     this.strokeRect(
       x + outlineWidth / 2,
@@ -89,6 +88,44 @@ class Display {
     for (let i = 0; i < history.length; i++) {
       this.fillRect(history[i].x, history[i].y, history[i].w, history[i].h, history[i].color.rgba);
     }
+  }
+
+  fillText(
+    text,
+    x,
+    y,
+    maxWidth,
+    color,
+    fontSize,
+    fontSizeUnit,
+    fontFamily,
+    textAlign,
+    textBaseline,
+  ) {
+    this.buffer.fillStyle = color;
+    this.buffer.font = fontSize + fontSizeUnit + ' ' + fontFamily; // ex. 10px sans-serif
+    this.buffer.textAlign = textAlign;
+    this.buffer.textBaseline = textBaseline;
+    this.buffer.fillText(text, x, y, maxWidth);
+  }
+
+  strokeText(
+    text,
+    x,
+    y,
+    maxWidth,
+    color,
+    fontSize,
+    fontSizeUnit,
+    fontFamily,
+    textAlign,
+    textBaseline,
+  ) {
+    this.buffer.strokeStyle = color;
+    this.buffer.font(fontSize + fontSizeUnit + ' ' + fontFamily); // ex. 10px sans-serif
+    this.buffer.textAlign(textAlign);
+    this.buffer.textBaseline(textBaseline);
+    this.buffer.strokeText(text, x, y, maxWidth);
   }
 
   background(gameBackgroundColor, canvasBackgroundColor) {

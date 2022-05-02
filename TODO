@@ -49,6 +49,7 @@ ContextMenu container for list of Buttons
 
 BUGS:
 -when zoomed in or out detection for mouse on buttons is innaccurate (fix should be done inside of display.camera.getRectVisualDimensions)
+-when panning and then attempting to right click to spawn a contextmenu, the contextmenu is at wrong position due to camera movement
 
 FUTURE FEATURES:
 -convert files to modules for cleaner importing

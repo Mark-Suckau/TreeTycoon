@@ -57,4 +57,3 @@ BUGS:
 FUTURE FEATURES:
 - convert files to modules for cleaner importing
 - reduce size of main.js by breaking into multiple files
-- add extra OverlayButton, StandaloneButton, ContextMenuButton classes which extend normal Button class

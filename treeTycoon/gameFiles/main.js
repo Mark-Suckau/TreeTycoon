@@ -52,12 +52,20 @@ const standardButton = {}; // NOTE: currently unused could be good idea in futur
 // buttons that will be overlayed ontop of normal game objects to make them clickable
 const overlayButton = {
   // button overlay for player
-  player: new Button(
+  player: new OverlayButton(
     200,
     200,
     100,
     50,
     false,
+    game.entities.player,
+    () => {
+      console.log('LMBOverlayButton');
+    },
+    () => {},
+    () => {
+      contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+    },
     'black',
     'green',
     false,
@@ -69,16 +77,6 @@ const overlayButton = {
     0,
     'px',
     'sans-serif',
-    [contextMenus.player.contextMenu],
-    () => {
-      console.log('LMBOverlayButton');
-    },
-    () => {},
-    () => {
-      contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
-    },
-    null,
-    game.entities.player,
   ),
 
   trees: [],
@@ -86,23 +84,13 @@ const overlayButton = {
 const contextMenuButtons = {
   player: {
     buttons: [
-      new Button(
+      new ContextMenuButton(
         0,
         0,
         50,
         50,
         true,
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
-        'test',
-        'rgb(255, 0, 0)',
-        50,
-        'px',
-        'sans-serif',
+        contextMenus.player.contextMenu,
         [contextMenus.test1.contextMenu],
         () => {
           console.log('LMB');
@@ -118,14 +106,35 @@ const contextMenuButtons = {
           );
           console.log('RMB');
         },
-        contextMenus.player.contextMenu,
+        'rgb(255, 255, 255)',
+        'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        50,
+        'px',
+        'sans-serif',
       ),
-      new Button(
+      new ContextMenuButton(
         0,
         0,
         50,
         50,
         true,
+        contextMenus.player.contextMenu,
+        [],
+        () => {
+          console.log('LMB2');
+        },
+        () => {
+          console.log('MMB2');
+        },
+        () => {
+          console.log('RMB2');
+        },
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
         true,
@@ -137,39 +146,18 @@ const contextMenuButtons = {
         10,
         'px',
         'sans-serif',
-        [],
-        () => {
-          console.log('LMB2');
-        },
-        () => {
-          console.log('MMB2');
-        },
-        () => {
-          console.log('RMB2');
-        },
-        contextMenus.player.contextMenu,
       ),
     ],
   },
   test1: {
     buttons: [
-      new Button(
+      new ContextMenuButton(
         0,
         0,
         50,
         50,
         true,
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
-        'test',
-        'rgb(255, 0, 0)',
-        50,
-        'px',
-        'sans-serif',
+        contextMenus.test1.contextMenu,
         [],
         () => {
           console.log('LMB3');
@@ -180,18 +168,6 @@ const contextMenuButtons = {
         () => {
           console.log('RMB3');
         },
-        contextMenus.test1.contextMenu,
-      ),
-    ],
-  },
-  tree: {
-    buttons: [
-      new Button(
-        0,
-        0,
-        50,
-        50,
-        true,
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
         true,
@@ -203,6 +179,18 @@ const contextMenuButtons = {
         50,
         'px',
         'sans-serif',
+      ),
+    ],
+  },
+  tree: {
+    buttons: [
+      new ContextMenuButton(
+        0,
+        0,
+        50,
+        50,
+        true,
+        contextMenus.tree.contextMenu,
         [],
         () => {
           console.log('LMB');
@@ -213,7 +201,17 @@ const contextMenuButtons = {
         () => {
           console.log('RMB');
         },
-        contextMenus.tree.contextMenu,
+        'rgb(255, 255, 255)',
+        'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        50,
+        'px',
+        'sans-serif',
       ),
     ],
   },
@@ -221,12 +219,20 @@ const contextMenuButtons = {
 function populateEntityOverlayButtons() {
   // used to fill arrays of overlayButtons to match amount of corresponding Entities since the button always needs to have the same constructor
   for (let tree of worldObjects.trees) {
-    let button = new Button(
+    let button = new OverlayButton(
       200,
       200,
       100,
       50,
       false,
+      tree,
+      () => {
+        console.log('LMBOverlayButton');
+      },
+      () => {},
+      () => {
+        contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+      },
       'black',
       'green',
       false,
@@ -238,16 +244,6 @@ function populateEntityOverlayButtons() {
       0,
       'px',
       'sans-serif',
-      [contextMenus.tree.contextMenu],
-      () => {
-        console.log('LMBOverlayButton');
-      },
-      () => {},
-      () => {
-        contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
-      },
-      null,
-      tree,
     );
     overlayButton.trees.push(button);
     game.addOverlayButton(button);

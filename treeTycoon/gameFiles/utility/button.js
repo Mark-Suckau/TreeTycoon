@@ -5,6 +5,9 @@ class Button {
     width,
     height,
     isHidden,
+    actionLMB = null,
+    actionMMB = null,
+    actionRMB = null,
     defaultColor = 'darkgreen',
     mouseOverColor = 'green',
     isOutlinedInside = false, // NOTE: only one or the other should be set as true, if both are true, outlineInside will be used
@@ -16,12 +19,6 @@ class Button {
     textSize = 10,
     textSizeUnit = 'px',
     textFontFamily = 'sans-serif',
-    nestedContextMenus = [],
-    actionLMB = null,
-    actionMMB = null,
-    actionRMB = null,
-    contextMenu = null,
-    overlayedObj = null,
   ) {
     this.actionLMB = actionLMB;
     this.actionRMB = actionRMB;
@@ -49,13 +46,6 @@ class Button {
     this.isOutlinedOutside = isOutlinedOutside; // if outline should be outside main rect
     this.isHidden = isHidden;
     this.isMouseOver = false;
-
-    this.contextMenu = contextMenu;
-    this.nestedContextMenus = nestedContextMenus; // array of contextMenus that this button can open
-    // variable used by contextMenus to keep track of buttons contained inside to allow for easier deletion
-    this.indexInContextMenu = -1; // starts as -1 since that is not a valid number to avoid accidental deletion of wrong index
-
-    this.overlayedObj = overlayedObj; // object instance that is being overlayed by this button (exclusively applies to overlay buttons and will remain NULL for non-overlay buttons)
   }
 
   show() {
@@ -122,19 +112,6 @@ class Button {
       this.activeColor = this.mouseOverColor;
     } else {
       this.activeColor = this.defaultColor;
-    }
-  }
-
-  matchRect(x, y, width, height, isHidden) {
-    // used to follow a given object and match size to allow for buttons to be overlayed onto normal game objects to add clickable functionality
-    this.pos.x = x;
-    this.pos.y = y;
-    this.width = width;
-    this.height = height;
-    if (isHidden && !this.isHidden) {
-      this.hide();
-    } else if (!isHidden && this.isHidden) {
-      this.show();
     }
   }
 }

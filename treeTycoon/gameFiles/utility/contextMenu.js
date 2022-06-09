@@ -13,6 +13,11 @@ class ContextMenu {
     this.buttons = []; // array containing list of buttons / information which is to be displayed
     this.nestedContextMenus = []; // all contextMenus that are nested within this one (meaning buttons that are contained in this contextMenu can open new contextMenus)
 
+    // manipulatedObj refers to the active object that this contextMenu and it's buttons could interact with
+    // ex. if right click on player overlayButton, then player contextMenu opens, player contextMenu will then have manipulatedObj set as player
+    // this allows the buttons inside the contextMenu to manipulate the player obj
+    this.manipulatedObj = null;
+
     this.width = 0; // start with 0 width, height since no buttons are added
     this.height = 0; // width, height is updated in addButton() to account for new buttons
 
@@ -23,6 +28,15 @@ class ContextMenu {
     // variable used by contextMenus incase this contextMenu is nested inside another
     // to keep track of this contextMenu's index inside the parent contextMenu's nestedContextMenus array for easier deletion
     this.indexInContextMenu = -1; // starts as -1 since that is not a valid number to avoid accidental deletion of wrong index
+  }
+
+  changeManipulatedObj(newManipulatedObj) {
+    // updates manipulatedObj for this contextMenu and all child contextMenus
+    this.manipulatedObj = newManipulatedObj;
+
+    for (let childContextMenu of this.nestedContextMenus) {
+      childContextMenu.changeManipulatedObj(newManipulatedObj);
+    }
   }
 
   addButton(button) {

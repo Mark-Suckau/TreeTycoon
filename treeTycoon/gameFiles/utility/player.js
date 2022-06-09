@@ -1,14 +1,17 @@
 class Player {
-  constructor(x, y, width, height, speed, money, hp) {
+  constructor(x, y, width, height, speed, money, hp, isHidden = false) {
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
     this.speed = speed;
     this.width = width;
     this.height = height;
 
+    this.isHidden = false;
+
     this.money = money;
     this.hp = hp;
   }
+
   move(dirX, dirY) {
     let moveX = dirX * this.speed;
     let moveY = dirY * this.speed;

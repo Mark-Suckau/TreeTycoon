@@ -21,6 +21,7 @@ class Button {
     actionMMB = null,
     actionRMB = null,
     contextMenu = null,
+    overlayedObj = null,
   ) {
     this.actionLMB = actionLMB;
     this.actionRMB = actionRMB;
@@ -53,6 +54,8 @@ class Button {
     this.nestedContextMenus = nestedContextMenus; // array of contextMenus that this button can open
     // variable used by contextMenus to keep track of buttons contained inside to allow for easier deletion
     this.indexInContextMenu = -1; // starts as -1 since that is not a valid number to avoid accidental deletion of wrong index
+
+    this.overlayedObj = overlayedObj; // object instance that is being overlayed by this button (exclusively applies to overlay buttons and will remain NULL for non-overlay buttons)
   }
 
   show() {
@@ -122,11 +125,16 @@ class Button {
     }
   }
 
-  copyRectDimensions(x, y, width, height) {
+  matchRect(x, y, width, height, isHidden) {
     // used to follow a given object and match size to allow for buttons to be overlayed onto normal game objects to add clickable functionality
     this.pos.x = x;
     this.pos.y = y;
     this.width = width;
     this.height = height;
+    if (isHidden && !this.isHidden) {
+      this.hide();
+    } else if (!isHidden && this.isHidden) {
+      this.show();
+    }
   }
 }

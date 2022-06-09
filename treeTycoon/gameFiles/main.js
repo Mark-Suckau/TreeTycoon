@@ -1,8 +1,26 @@
-const player = new Player(190, 190, 20, 20, 5, 100, 100);
-const world1 = new World(400, 400); // TEMP
-const game = new Game(player, world1);
+// WORLD setup
+// TODO: add overlaybutton for trees
+const worldObjects = {
+  trees: [
+    new Tree(
+      100,
+      100,
+      30,
+      30,
+      100,
+      0,
+      30,
+      ['brown'],
+      false,
+      new Wood(0, 0, 20, 20, 'yellow', 'green', 100, true),
+    ),
+  ],
+};
 
-const display = new Display(400, 400, game.world.width, game.world.height);
+const world1 = new World(800, 800); // TEMP
+const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(10));
+
+const display = new Display(800, 800, game.world.width, game.world.height);
 const controller = new Controller(400, 400, game.world.width, game.world.height);
 
 function switchWorld(world) {
@@ -24,6 +42,9 @@ const contextMenus = {
   },
   test1: {
     contextMenu: new ContextMenu(90, 50),
+  },
+  tree: {
+    contextMenu: new ContextMenu(100, 50),
   },
 };
 // buttons not in a contextMenu or as an overlay
@@ -56,7 +77,11 @@ const overlayButton = {
     () => {
       contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
+    null,
+    game.entities.player,
   ),
+
+  trees: [],
 };
 const contextMenuButtons = {
   player: {
@@ -159,13 +184,87 @@ const contextMenuButtons = {
       ),
     ],
   },
+  tree: {
+    buttons: [
+      new Button(
+        0,
+        0,
+        50,
+        50,
+        true,
+        'rgb(255, 255, 255)',
+        'rgb(100,  255, 100)',
+        true,
+        false,
+        'rgb(100, 200, 100)',
+        5,
+        'test',
+        'rgb(255, 0, 0)',
+        50,
+        'px',
+        'sans-serif',
+        [],
+        () => {
+          console.log('LMB');
+        },
+        () => {
+          console.log('MMB');
+        },
+        () => {
+          console.log('RMB');
+        },
+        contextMenus.tree.contextMenu,
+      ),
+    ],
+  },
 };
-
-function loadClickables() {
-  // loads clickables from different objects
+function populateEntityOverlayButtons() {
+  // used to fill arrays of overlayButtons to match amount of corresponding Entities since the button always needs to have the same constructor
+  for (let tree of worldObjects.trees) {
+    let button = new Button(
+      200,
+      200,
+      100,
+      50,
+      false,
+      'black',
+      'green',
+      false,
+      false,
+      'rgb(100, 255, 100)',
+      15,
+      '',
+      'white',
+      0,
+      'px',
+      'sans-serif',
+      [contextMenus.tree.contextMenu],
+      () => {
+        console.log('LMBOverlayButton');
+      },
+      () => {},
+      () => {
+        contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+      },
+      null,
+      tree,
+    );
+    overlayButton.trees.push(button);
+    game.addOverlayButton(button);
+  }
+}
+function loadEntities() {
+  // loads entities from different objects
+  // TREES & WOOD
+  for (let tree of worldObjects.trees) {
+    game.addTree(tree);
+    game.addWood(tree.wood);
+  }
 
   // BUTTONS
   // overlay buttons
+  populateEntityOverlayButtons();
+
   game.addOverlayButton(overlayButton.player);
 
   // context menu buttons
@@ -177,12 +276,17 @@ function loadClickables() {
     game.addContextMenuButton(button);
     contextMenus.test1.contextMenu.addButton(button);
   }
+  for (let button of contextMenuButtons.tree.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.tree.contextMenu.addButton(button);
+  }
 
   // CONTEXT MENUS
   game.addContextMenu(contextMenus.test1.contextMenu);
   game.addContextMenu(contextMenus.player.contextMenu);
+  game.addContextMenu(contextMenus.tree.contextMenu);
 }
-loadClickables();
+loadEntities();
 
 // controller
 document.addEventListener(
@@ -233,33 +337,33 @@ document.addEventListener(
 
 function update() {
   // player
-  if (controller.gameInput.up.active) player.move(0, -1);
-  if (controller.gameInput.down.active) player.move(0, 1);
-  if (controller.gameInput.left.active) player.move(-1, 0);
-  if (controller.gameInput.right.active) player.move(1, 0);
+  if (controller.gameInput.up.active) game.entities.player.move(0, -1);
+  if (controller.gameInput.down.active) game.entities.player.move(0, 1);
+  if (controller.gameInput.left.active) game.entities.player.move(-1, 0);
+  if (controller.gameInput.right.active) game.entities.player.move(1, 0);
 
-  player.handleCollisionWorld(
+  game.entities.player.handleCollisionWorld(
     collideRectWorld(
       game.world.width,
       game.world.height,
-      game.player.pos.x,
-      game.player.pos.y,
-      game.player.width,
-      game.player.height,
-      game.player.vel.x,
-      game.player.vel.y,
+      game.entities.player.pos.x,
+      game.entities.player.pos.y,
+      game.entities.player.width,
+      game.entities.player.height,
+      game.entities.player.vel.x,
+      game.entities.player.vel.y,
     ),
     game.world.width,
     game.world.height,
   );
-  player.update();
+  game.entities.player.update();
 
   // camera
   display.camera.followObj(
-    game.player.pos.x,
-    game.player.pos.y,
-    game.player.width,
-    game.player.height,
+    game.entities.player.pos.x,
+    game.entities.player.pos.y,
+    game.entities.player.width,
+    game.entities.player.height,
     game.world.width,
     game.world.height,
   );
@@ -273,7 +377,17 @@ function update() {
 
   // CLICKABLES START
   // button overlays
-  overlayButton.player.copyRectDimensions(player.pos.x, player.pos.y, player.width, player.height);
+
+  // WARNING: if the button does not have an overlayedObj defined, it will not work
+  for (let gameOverlayButton of game.clickables.overlayButtons) {
+    gameOverlayButton.matchRect(
+      gameOverlayButton.overlayedObj.pos.x,
+      gameOverlayButton.overlayedObj.pos.y,
+      gameOverlayButton.overlayedObj.width,
+      gameOverlayButton.overlayedObj.height,
+      gameOverlayButton.overlayedObj.isHidden,
+    );
+  }
 
   // checkMouseOver for context menus
   let mouseOverContextMenus = []; // keeps track of all not hidden context menus in this frame that have the mouse over them
@@ -386,12 +500,24 @@ function render() {
 
   // player
   display.fillRect(
-    game.player.pos.x,
-    game.player.pos.y,
-    game.player.width,
-    game.player.height,
+    game.entities.player.pos.x,
+    game.entities.player.pos.y,
+    game.entities.player.width,
+    game.entities.player.height,
     'white',
   );
+
+  for (let tree of game.entities.trees) {
+    if (!tree.isHidden) {
+      display.fillRect(tree.pos.x, tree.pos.y, tree.width, tree.height);
+    }
+  }
+
+  for (let wood of game.entities.wood) {
+    if (!wood.isHidden) {
+      display.fillRect(wood.pos.x, wood.pos.y, wood.width, wood.height);
+    }
+  }
 
   for (let button of game.clickables.overlayButtons) {
     if (!button.isHidden) {
@@ -486,9 +612,10 @@ function render() {
   }
 
   display.render();
+
   // clickables
   // these are displayed the same because they both need to be seperated from the game canvas
-  // displayed directly on the display canvas
+  // DISPLAYED DIRECTLY ONTO DISPLAY CANVAS so it doesn't make a difference if display.render() is called before or after
   for (let button of game.clickables.contextMenuAndStandaloneButtons) {
     if (!button.isHidden) {
       if (!button.activeColor) {

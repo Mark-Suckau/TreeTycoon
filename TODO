@@ -51,7 +51,10 @@ BUGS:
 - when zoomed in or out detection for mouse on buttons is innaccurate (fix should be done inside of display.camera.getRectVisualDimensions)
 - when standaloneButtons are layered multiple are clickable
 - when overlayButtons are layered multiple are clickable
+- when either game world is larger than display size or game world is smaller than display size, proper mouseOver detection does not work
+(basically if the game canvas and display canvas arent the exact same size, mouseOver detection no longer works properly)
 
 FUTURE FEATURES:
 - convert files to modules for cleaner importing
 - reduce size of main.js by breaking into multiple files
+- add extra OverlayButton, StandaloneButton, ContextMenuButton classes which extend normal Button class

@@ -17,7 +17,7 @@ class Game {
     this.gameTime = gameTimeObj; // uses GameTime Class instantiated object
   }
 
-  updateFrameCount() {
+  update() {
     this.frameCount += 1;
     this.gameTime.update();
   }
@@ -35,8 +35,10 @@ class Game {
     return this.gameTime.gameYears;
   }
 
-  addWood(wood) {
-    return this.entities.wood.push(wood);
+  addWoodArray(woodArray) {
+    for (let wood of woodArray) {
+      this.entities.wood.push(wood);
+    }
   }
 
   addTree(tree) {

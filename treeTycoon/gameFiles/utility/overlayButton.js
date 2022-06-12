@@ -9,8 +9,6 @@ class OverlayButton extends Button {
     actionLMB = null,
     actionMMB = null,
     actionRMB = null,
-    defaultColor = 'darkgreen',
-    mouseOverColor = 'green',
     isOutlinedInside = false, // NOTE: only one or the other should be set as true, if both are true, outlineInside will be used
     isOutlinedOutside = false,
     outlineColor = '',
@@ -20,6 +18,8 @@ class OverlayButton extends Button {
     textSize = 10,
     textSizeUnit = 'px',
     textFontFamily = 'sans-serif',
+    defaultColor = 'rgba(0, 0, 0, 0)',
+    mouseOverColor = 'rgba(0, 200, 0, 0.4)',
   ) {
     super(
       x,

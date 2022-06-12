@@ -6,10 +6,33 @@ class Player {
     this.width = width;
     this.height = height;
 
-    this.isHidden = false;
+    this.isHidden = isHidden;
+    this.inventory = {
+      wood: [],
+      seeds: [],
+      equipment: [], // TODO add equipment
+    };
 
+    this.damage = 10;
     this.money = money;
     this.hp = hp;
+
+    this.currentlyDisplayedMessage = {};
+  }
+
+  showMessage(text, displayTimeSeconds) {
+    // displays a message above player head which will slowly fade away
+    let message = {
+      pos: new Vector(this.pos.x + this.width / 2, this.pos.y),
+      text: text,
+      displayStartTimeStamp: Date.now(),
+      totalDisplayTimeSeconds: displayTimeSeconds,
+    };
+    this.currentlyDisplayedMessage.push(message);
+  }
+
+  collectWood(wood) {
+    this.inventory.wood.push(wood);
   }
 
   move(dirX, dirY) {
@@ -19,6 +42,18 @@ class Player {
   }
 
   update() {
+    // messages
+    for (let i = 0; i < this.currentlyDisplayedMessages.length; i++) {
+      // totalDisplayTimeSeconds * 1000 to convert to miliseconds
+      if (
+        Date.now() - this.currentlyDisplayedMessages[i].displayStartTimeStamp >=
+        this.currentlyDisplayedMessages[i].totalDisplayTimeSeconds * 1000
+      ) {
+        this.currentlyDisplayedMessages.splice(i, 1);
+      }
+    }
+
+    // position
     this.pos.addV(this.vel);
 
     // reset velocity

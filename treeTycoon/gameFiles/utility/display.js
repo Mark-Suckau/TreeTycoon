@@ -53,6 +53,9 @@ class Display {
 
   fillRect(x, y, w, h, color) {
     // NOTE: if color is left as undefined, the color used from last function call will be reused
+    if (!color) {
+      console.error('Warning: no color supplied');
+    }
     this.buffer.fillStyle = color;
     this.buffer.fillRect(x, y, w, h);
   }

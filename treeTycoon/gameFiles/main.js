@@ -1,24 +1,5 @@
-// WORLD setup
-// TODO: add overlaybutton for trees
-const worldObjects = {
-  trees: [
-    new Tree(
-      100,
-      100,
-      30,
-      30,
-      100,
-      0,
-      30,
-      ['brown'],
-      false,
-      new Wood(0, 0, 20, 20, 'yellow', 'green', 100, true),
-    ),
-  ],
-};
-
 const world1 = new World(800, 800); // TEMP
-const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(10));
+const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(1)); // TEMP (change GameTime param to 1)
 
 const display = new Display(800, 800, game.world.width, game.world.height);
 const controller = new Controller(400, 400, game.world.width, game.world.height);
@@ -32,6 +13,19 @@ function switchWorld(world) {
   display.matchAspectRatio(game.world, display.canvas.width, display.canvas.height); // resizes game borders
 }
 
+// WORLD setup
+const worldObjects = {
+  trees: [
+    new Tree(100, 100, 30, 30, 100, 0, 30, false, [
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+    ]),
+    new Tree(100, 300, 30, 30, 100, 0, 30, false, [
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+    ]),
+  ],
+};
 // CLICKABLES
 // contains buttons, contextmenus which are either standalone or will be attached to an object inside of main.js
 
@@ -39,9 +33,9 @@ function switchWorld(world) {
 const contextMenus = {
   player: {
     contextMenu: new ContextMenu(100, 50),
-  },
-  test1: {
-    contextMenu: new ContextMenu(90, 50),
+    inventory: {
+      contextMenu: new ContextMenu(90, 50),
+    },
   },
   tree: {
     contextMenu: new ContextMenu(100, 50),
@@ -59,15 +53,12 @@ const overlayButton = {
     50,
     false,
     game.entities.player,
-    () => {
-      console.log('LMBOverlayButton');
-    },
+    () => {},
     () => {},
     () => {
+      contextMenus.player.contextMenu.setManipulatedObj(game.entities.player);
       contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
-    'black',
-    'green',
     false,
     false,
     'rgb(100, 255, 100)',
@@ -80,6 +71,8 @@ const overlayButton = {
   ),
 
   trees: [],
+
+  wood: [],
 };
 const contextMenuButtons = {
   player: {
@@ -91,21 +84,10 @@ const contextMenuButtons = {
         50,
         true,
         contextMenus.player.contextMenu,
-        [contextMenus.test1.contextMenu],
-        () => {
-          console.log('LMB');
-        },
-        () => {
-          console.log('MMB');
-        },
-        () => {
-          contextMenus.test1.contextMenu.show(
-            controller.mouseX,
-            controller.mouseY,
-            game.frameCount,
-          );
-          console.log('RMB');
-        },
+        [],
+        () => {},
+        () => {},
+        () => {},
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
         true,
@@ -126,15 +108,9 @@ const contextMenuButtons = {
         true,
         contextMenus.player.contextMenu,
         [],
-        () => {
-          console.log('LMB2');
-        },
-        () => {
-          console.log('MMB2');
-        },
-        () => {
-          console.log('RMB2');
-        },
+        () => {},
+        () => {},
+        () => {},
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
         true,
@@ -148,39 +124,33 @@ const contextMenuButtons = {
         'sans-serif',
       ),
     ],
-  },
-  test1: {
-    buttons: [
-      new ContextMenuButton(
-        0,
-        0,
-        50,
-        50,
-        true,
-        contextMenus.test1.contextMenu,
-        [],
-        () => {
-          console.log('LMB3');
-        },
-        () => {
-          console.log('MMB3');
-        },
-        () => {
-          console.log('RMB3');
-        },
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
-        'test',
-        'rgb(255, 0, 0)',
-        50,
-        'px',
-        'sans-serif',
-      ),
-    ],
+    equipment: {
+      buttons: [
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.inventory.contextMenu,
+          [],
+          () => {},
+          () => {},
+          () => {},
+          'rgb(255, 255, 255)',
+          'rgb(100,  255, 100)',
+          true,
+          false,
+          'rgb(100, 200, 100)',
+          5,
+          'test',
+          'rgb(255, 0, 0)',
+          50,
+          'px',
+          'sans-serif',
+        ),
+      ],
+    },
   },
   tree: {
     buttons: [
@@ -193,21 +163,17 @@ const contextMenuButtons = {
         contextMenus.tree.contextMenu,
         [],
         () => {
-          console.log('LMB');
+          // TODO: add info window popup which can be dragged by mouse and closed (shows info like treeTypeName, age, lifePhase, woodValue, hp, etc.)
         },
-        () => {
-          console.log('MMB');
-        },
-        () => {
-          console.log('RMB');
-        },
+        () => {},
+        () => {},
         'rgb(255, 255, 255)',
         'rgb(100,  255, 100)',
         true,
         false,
         'rgb(100, 200, 100)',
         5,
-        'test',
+        'INFO',
         'rgb(255, 0, 0)',
         50,
         'px',
@@ -216,25 +182,51 @@ const contextMenuButtons = {
     ],
   },
 };
-function populateEntityOverlayButtons() {
+function addTreeToGame(tree) {
   // used to fill arrays of overlayButtons to match amount of corresponding Entities since the button always needs to have the same constructor
-  for (let tree of worldObjects.trees) {
-    let button = new OverlayButton(
+  let treeOverlayButton = new OverlayButton(
+    200,
+    200,
+    100,
+    50,
+    false,
+    tree,
+    () => {
+      tree.getHarvestedTakeDamage(game.entities.player.damage);
+    },
+    () => {},
+    () => {
+      contextMenus.tree.contextMenu.setManipulatedObj(tree);
+      contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+    },
+    false,
+    false,
+    'rgb(100, 255, 100)',
+    15,
+    '',
+    'white',
+    0,
+    'px',
+    'sans-serif',
+  );
+
+  overlayButton.trees.push(treeOverlayButton);
+  game.addOverlayButton(treeOverlayButton);
+
+  for (let wood of tree.woodArray) {
+    let woodOverlayButton = new OverlayButton(
       200,
       200,
       100,
       50,
       false,
-      tree,
+      wood,
       () => {
-        console.log('LMBOverlayButton');
+        wood.hide();
+        game.entities.player.collectWood(wood);
       },
       () => {},
-      () => {
-        contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
-      },
-      'black',
-      'green',
+      () => {},
       false,
       false,
       'rgb(100, 255, 100)',
@@ -245,21 +237,22 @@ function populateEntityOverlayButtons() {
       'px',
       'sans-serif',
     );
-    overlayButton.trees.push(button);
-    game.addOverlayButton(button);
+    overlayButton.wood.push(woodOverlayButton);
+    game.addOverlayButton(woodOverlayButton);
   }
+
+  game.addTree(tree);
+  game.addWoodArray(tree.woodArray);
 }
 function loadEntities() {
   // loads entities from different objects
   // TREES & WOOD
   for (let tree of worldObjects.trees) {
-    game.addTree(tree);
-    game.addWood(tree.wood);
+    addTreeToGame(tree);
   }
 
   // BUTTONS
   // overlay buttons
-  populateEntityOverlayButtons();
 
   game.addOverlayButton(overlayButton.player);
 
@@ -268,9 +261,9 @@ function loadEntities() {
     game.addContextMenuButton(button);
     contextMenus.player.contextMenu.addButton(button);
   }
-  for (let button of contextMenuButtons.test1.buttons) {
+  for (let button of contextMenuButtons.player.equipment.buttons) {
     game.addContextMenuButton(button);
-    contextMenus.test1.contextMenu.addButton(button);
+    contextMenus.player.inventory.contextMenu.addButton(button);
   }
   for (let button of contextMenuButtons.tree.buttons) {
     game.addContextMenuButton(button);
@@ -278,7 +271,7 @@ function loadEntities() {
   }
 
   // CONTEXT MENUS
-  game.addContextMenu(contextMenus.test1.contextMenu);
+  game.addContextMenu(contextMenus.player.inventory.contextMenu);
   game.addContextMenu(contextMenus.player.contextMenu);
   game.addContextMenu(contextMenus.tree.contextMenu);
 }
@@ -332,6 +325,8 @@ document.addEventListener(
 );
 
 function update() {
+  // ENTITIES
+
   // player
   if (controller.gameInput.up.active) game.entities.player.move(0, -1);
   if (controller.gameInput.down.active) game.entities.player.move(0, 1);
@@ -353,6 +348,14 @@ function update() {
     game.world.height,
   );
   game.entities.player.update();
+
+  // trees
+
+  for (let tree of game.entities.trees) {
+    if (game.gameYears - tree.age >= 1) {
+      tree.gainAge();
+    }
+  }
 
   // camera
   display.camera.followObj(
@@ -485,14 +488,15 @@ function update() {
       button.confirmMouseOver(false);
     }
   }
-
   // CLICKABLES END
 
-  game.updateFrameCount();
+  game.update();
 }
+// TEST TEMP
+game.entities.player.showMessage('test test test', 1);
 
 function render() {
-  display.background('blue', 'black');
+  display.background('rgb(100, 250, 100)', 'rgb(0, 100, 100)');
 
   // player
   display.fillRect(
@@ -500,18 +504,52 @@ function render() {
     game.entities.player.pos.y,
     game.entities.player.width,
     game.entities.player.height,
-    'white',
+    'gold',
   );
+
+  // displays messages for player
+  let maxWidth = game.entities.player.width >= 100 ? game.entities.player.width : 100;
+  let messageYOffsetPX = 30;
+  let messageCounter = 0;
+  for (let i = game.entities.player.currentlyDisplayedMessages.length - 1; i >= 0; i--) {
+    display.fillText(
+      game.entities.player.currentlyDisplayedMessages[i].text,
+      game.entities.player.currentlyDisplayedMessages[i].pos.x,
+      game.entities.player.currentlyDisplayedMessages[i].pos.y -
+        10 -
+        messageYOffsetPX * messageCounter,
+      maxWidth,
+      'red',
+      15,
+      'px',
+      'sans-serif',
+      'center',
+      'middle',
+    );
+    messageCounter++;
+  }
 
   for (let tree of game.entities.trees) {
     if (!tree.isHidden) {
-      display.fillRect(tree.pos.x, tree.pos.y, tree.width, tree.height);
+      //tree body
+      display.fillRect(tree.pos.x, tree.pos.y, tree.width, tree.height, tree.activeColor);
+
+      //hp bar-
+      display.drawRectWithOutlineInside(
+        tree.hpBar.pos.x,
+        tree.hpBar.pos.y,
+        tree.hpBarWidth,
+        tree.hpBar.height,
+        'red',
+        'black',
+        2,
+      );
     }
   }
 
   for (let wood of game.entities.wood) {
     if (!wood.isHidden) {
-      display.fillRect(wood.pos.x, wood.pos.y, wood.width, wood.height);
+      display.fillRect(wood.pos.x, wood.pos.y, wood.width, wood.height, wood.activeColor);
     }
   }
 

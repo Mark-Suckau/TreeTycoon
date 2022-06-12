@@ -1,10 +1,9 @@
 class Wood {
-  constructor(x, y, width, height, activeColor, mouseOverColor, sellPrice, isHidden = true) {
+  constructor(x, y, width, height, activeColor, sellPrice, isHidden = true) {
     this.pos = new Vector(x, y);
     this.width = width;
     this.height = height;
     this.activeColor = activeColor;
-    this.mouseOverColor = mouseOverColor;
     this.sellPrice = sellPrice;
     this.isHidden = isHidden;
   }

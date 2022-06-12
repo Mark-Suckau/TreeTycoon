@@ -30,12 +30,12 @@ class ContextMenu {
     this.indexInContextMenu = -1; // starts as -1 since that is not a valid number to avoid accidental deletion of wrong index
   }
 
-  changeManipulatedObj(newManipulatedObj) {
+  setManipulatedObj(newManipulatedObj) {
     // updates manipulatedObj for this contextMenu and all child contextMenus
     this.manipulatedObj = newManipulatedObj;
 
     for (let childContextMenu of this.nestedContextMenus) {
-      childContextMenu.changeManipulatedObj(newManipulatedObj);
+      childContextMenu.setManipulatedObj(newManipulatedObj);
     }
   }
 

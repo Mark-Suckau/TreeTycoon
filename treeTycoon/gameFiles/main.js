@@ -1,5 +1,5 @@
 const world1 = new World(800, 800); // TEMP
-const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(1)); // TEMP (change GameTime param to 1)
+const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(0.5)); // TEMP (change GameTime param to 1)
 
 const display = new Display(800, 800, game.world.width, game.world.height);
 const controller = new Controller(400, 400, game.world.width, game.world.height);
@@ -12,6 +12,30 @@ function switchWorld(world) {
   // EXPERIMENTAL
   display.matchAspectRatio(game.world, display.canvas.width, display.canvas.height); // resizes game borders
 }
+
+// MESSAGES
+// to be displayed by player using player.showMessage() method
+const messages = {
+  treeTooYoung: {
+    // for when player is attempting to harvest a tree that is too young so it will not drop wood
+    text: 'TREE TOO YOUNG',
+    displayTimeSeconds: 1,
+    color: {
+      r: 255,
+      g: 0,
+      b: 0,
+    },
+  },
+  collectWood: {
+    text: '+1 WOOD',
+    displayTimeSeconds: 1,
+    color: {
+      r: 0,
+      g: 255,
+      b: 0,
+    },
+  },
+};
 
 // WORLD setup
 const worldObjects = {
@@ -59,15 +83,8 @@ const overlayButton = {
       contextMenus.player.contextMenu.setManipulatedObj(game.entities.player);
       contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
-    false,
-    false,
-    'rgb(100, 255, 100)',
-    15,
     '',
     'white',
-    0,
-    'px',
-    'sans-serif',
   ),
 
   trees: [],
@@ -88,17 +105,7 @@ const contextMenuButtons = {
         () => {},
         () => {},
         () => {},
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
-        'test',
-        'rgb(255, 0, 0)',
-        50,
-        'px',
-        'sans-serif',
+        'WOOD',
       ),
       new ContextMenuButton(
         0,
@@ -111,17 +118,7 @@ const contextMenuButtons = {
         () => {},
         () => {},
         () => {},
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
-        'test',
-        'rgb(255, 0, 0)',
-        10,
-        'px',
-        'sans-serif',
+        'SEEDS',
       ),
     ],
     equipment: {
@@ -137,17 +134,7 @@ const contextMenuButtons = {
           () => {},
           () => {},
           () => {},
-          'rgb(255, 255, 255)',
-          'rgb(100,  255, 100)',
-          true,
-          false,
-          'rgb(100, 200, 100)',
-          5,
-          'test',
-          'rgb(255, 0, 0)',
-          50,
-          'px',
-          'sans-serif',
+          'TestEquipmentItem',
         ),
       ],
     },
@@ -167,17 +154,7 @@ const contextMenuButtons = {
         },
         () => {},
         () => {},
-        'rgb(255, 255, 255)',
-        'rgb(100,  255, 100)',
-        true,
-        false,
-        'rgb(100, 200, 100)',
-        5,
         'INFO',
-        'rgb(255, 0, 0)',
-        50,
-        'px',
-        'sans-serif',
       ),
     ],
   },
@@ -192,6 +169,15 @@ function addTreeToGame(tree) {
     false,
     tree,
     () => {
+      if (tree.lifePhase == 0) {
+        game.entities.player.showMessage(
+          messages.treeTooYoung.text,
+          messages.treeTooYoung.displayTimeSeconds,
+          messages.treeTooYoung.color.r,
+          messages.treeTooYoung.color.g,
+          messages.treeTooYoung.color.b,
+        );
+      }
       tree.getHarvestedTakeDamage(game.entities.player.damage);
     },
     () => {},
@@ -199,15 +185,6 @@ function addTreeToGame(tree) {
       contextMenus.tree.contextMenu.setManipulatedObj(tree);
       contextMenus.tree.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
-    false,
-    false,
-    'rgb(100, 255, 100)',
-    15,
-    '',
-    'white',
-    0,
-    'px',
-    'sans-serif',
   );
 
   overlayButton.trees.push(treeOverlayButton);
@@ -222,20 +199,18 @@ function addTreeToGame(tree) {
       false,
       wood,
       () => {
+        game.entities.player.showMessage(
+          messages.collectWood.text,
+          messages.collectWood.displayTimeSeconds,
+          messages.collectWood.color.r,
+          messages.collectWood.color.g,
+          messages.collectWood.color.b,
+        );
         wood.hide();
         game.entities.player.collectWood(wood);
       },
       () => {},
       () => {},
-      false,
-      false,
-      'rgb(100, 255, 100)',
-      15,
-      '',
-      'white',
-      0,
-      'px',
-      'sans-serif',
     );
     overlayButton.wood.push(woodOverlayButton);
     game.addOverlayButton(woodOverlayButton);
@@ -492,42 +467,12 @@ function update() {
 
   game.update();
 }
+
 // TEST TEMP
-game.entities.player.showMessage('test test test', 1);
+game.entities.player.showMessage('test test test', 5, 0, 200, 20);
 
 function render() {
-  display.background('rgb(100, 250, 100)', 'rgb(0, 100, 100)');
-
-  // player
-  display.fillRect(
-    game.entities.player.pos.x,
-    game.entities.player.pos.y,
-    game.entities.player.width,
-    game.entities.player.height,
-    'gold',
-  );
-
-  // displays messages for player
-  let maxWidth = game.entities.player.width >= 100 ? game.entities.player.width : 100;
-  let messageYOffsetPX = 30;
-  let messageCounter = 0;
-  for (let i = game.entities.player.currentlyDisplayedMessages.length - 1; i >= 0; i--) {
-    display.fillText(
-      game.entities.player.currentlyDisplayedMessages[i].text,
-      game.entities.player.currentlyDisplayedMessages[i].pos.x,
-      game.entities.player.currentlyDisplayedMessages[i].pos.y -
-        10 -
-        messageYOffsetPX * messageCounter,
-      maxWidth,
-      'red',
-      15,
-      'px',
-      'sans-serif',
-      'center',
-      'middle',
-    );
-    messageCounter++;
-  }
+  display.background('rgba(32, 219, 29)', 'rgb(38, 128, 237)');
 
   for (let tree of game.entities.trees) {
     if (!tree.isHidden) {
@@ -642,6 +587,44 @@ function render() {
           );
         }
       }
+    }
+    // player
+    display.fillRect(
+      game.entities.player.pos.x,
+      game.entities.player.pos.y,
+      game.entities.player.width,
+      game.entities.player.height,
+      'gold',
+    );
+
+    // displays messages for player
+
+    // WARNING: if color of message matches background color too closely it wont be visible since it will just blend in
+    let maxWidth = game.entities.player.width >= 100 ? game.entities.player.width : 100;
+    let messageYOffsetPX = 30;
+    let messageCounter = 0;
+    for (let i = game.entities.player.currentlyDisplayedMessages.length - 1; i >= 0; i--) {
+      display.fillText(
+        game.entities.player.currentlyDisplayedMessages[i].text,
+        game.entities.player.pos.x + game.entities.player.width / 2,
+        game.entities.player.pos.y - 10 - messageYOffsetPX * messageCounter,
+        maxWidth,
+        'rgba(' +
+          game.entities.player.currentlyDisplayedMessages[i].color.r +
+          ', ' +
+          game.entities.player.currentlyDisplayedMessages[i].color.g +
+          ', ' +
+          game.entities.player.currentlyDisplayedMessages[i].color.b +
+          ',' +
+          game.entities.player.currentlyDisplayedMessages[i].color.a +
+          ')',
+        17,
+        'px',
+        'sans-serif',
+        'center',
+        'middle',
+      );
+      messageCounter++;
     }
   }
 

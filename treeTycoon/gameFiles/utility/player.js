@@ -17,18 +17,23 @@ class Player {
     this.money = money;
     this.hp = hp;
 
-    this.currentlyDisplayedMessage = {};
+    this.currentlyDisplayedMessages = [];
   }
 
-  showMessage(text, displayTimeSeconds) {
+  showMessage(text, displayTimeSeconds, r, g, b) {
     // displays a message above player head which will slowly fade away
     let message = {
-      pos: new Vector(this.pos.x + this.width / 2, this.pos.y),
       text: text,
+      color: {
+        r: r,
+        g: g,
+        b: b,
+        a: 1,
+      },
       displayStartTimeStamp: Date.now(),
       totalDisplayTimeSeconds: displayTimeSeconds,
     };
-    this.currentlyDisplayedMessage.push(message);
+    this.currentlyDisplayedMessages.push(message);
   }
 
   collectWood(wood) {
@@ -44,12 +49,20 @@ class Player {
   update() {
     // messages
     for (let i = 0; i < this.currentlyDisplayedMessages.length; i++) {
+      let timeSinceStartedDisplaying =
+        Date.now() - this.currentlyDisplayedMessages[i].displayStartTimeStamp;
       // totalDisplayTimeSeconds * 1000 to convert to miliseconds
       if (
-        Date.now() - this.currentlyDisplayedMessages[i].displayStartTimeStamp >=
+        timeSinceStartedDisplaying >=
         this.currentlyDisplayedMessages[i].totalDisplayTimeSeconds * 1000
       ) {
         this.currentlyDisplayedMessages.splice(i, 1);
+      } else {
+        // calculates new alpha value based on how much remaining time until message disappears to allow it to fade away
+        let percentTimeGone =
+          timeSinceStartedDisplaying /
+          (this.currentlyDisplayedMessages[i].totalDisplayTimeSeconds * 1000);
+        this.currentlyDisplayedMessages[i].color.a = 1 - percentTimeGone;
       }
     }
 

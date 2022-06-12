@@ -112,6 +112,24 @@ class Display {
     this.buffer.fillText(text, x, y, maxWidth);
   }
 
+  fillTextNoMaxWidth(
+    text,
+    x,
+    y,
+    color,
+    fontSize,
+    fontSizeUnit,
+    fontFamily,
+    textAlign,
+    textBaseline,
+  ) {
+    this.buffer.fillStyle = color;
+    this.buffer.font = fontSize + fontSizeUnit + ' ' + fontFamily; // ex. 10px sans-serif
+    this.buffer.textAlign = textAlign;
+    this.buffer.textBaseline = textBaseline;
+    this.buffer.fillText(text, x, y);
+  }
+
   strokeText(
     text,
     x,

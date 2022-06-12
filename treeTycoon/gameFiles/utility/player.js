@@ -7,6 +7,7 @@ class Player {
     this.height = height;
 
     this.isHidden = isHidden;
+    // seed grade determines which type of tree will be planted, quality ascends with grade number
     this.inventory = {
       wood: [],
       seeds: [],
@@ -18,6 +19,27 @@ class Player {
     this.hp = hp;
 
     this.currentlyDisplayedMessages = [];
+  }
+
+  inventoryClearAllWood() {
+    // clears all wood inside of inventory for when all wood is sold
+    this.inventory.wood = [];
+  }
+
+  addSeed(seed) {
+    this.inventory.seeds.push(seed);
+  }
+
+  removeSeedGrade(seedGrade) {
+    // removes one seed of specified seedGrade from inventory
+    let seedFound = undefined;
+    for (let i = 0; i < this.inventory.seeds.length; i++) {
+      if (this.inventory.seeds[i].grade == seedGrade) {
+        seedFound = this.inventory.seeds[i];
+        this.inventory.seeds.splice(i, 1);
+      }
+    }
+    return seedFound;
   }
 
   showMessage(text, displayTimeSeconds, r, g, b) {

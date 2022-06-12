@@ -16,26 +16,67 @@ function switchWorld(world) {
 // MESSAGES
 // to be displayed by player using player.showMessage() method
 const messages = {
-  treeTooYoung: {
-    // for when player is attempting to harvest a tree that is too young so it will not drop wood
-    text: 'TREE TOO YOUNG',
-    displayTimeSeconds: 1,
-    color: {
+  treeTooYoung: function (
+    text = 'TREE TOO YOUNG',
+    displayTimeSeconds = 1,
+    color = {
       r: 255,
       g: 0,
       b: 0,
     },
+  ) {
+    return { text, displayTimeSeconds, color };
   },
-  collectWood: {
-    text: '+1 WOOD',
-    displayTimeSeconds: 1,
-    color: {
+  // for when player is attempting to harvest a tree that is too young so it will not drop wood
+  collectWood: function (
+    text = '+1 WOOD',
+    displayTimeSeconds = 1,
+    color = {
       r: 0,
       g: 255,
       b: 0,
     },
+  ) {
+    return { text, displayTimeSeconds, color };
+  },
+
+  sellWood: function (
+    totalWoodValue = 0,
+    displayTimeSeconds = 1,
+    color = {
+      r: 0,
+      g: 255,
+      b: 0,
+    },
+  ) {
+    let text = '+' + totalWoodValue;
+    return { text, displayTimeSeconds, color };
+  },
+
+  insufficientSeeds: function (
+    seedTypeName,
+    displayTimeSeconds = 1,
+    color = { r: 255, g: 0, b: 0 },
+  ) {
+    return {
+      text: 'INSUFFICIENT ' + seedTypeName + ' SEEDS',
+      displayTimeSeconds,
+      color,
+    };
   },
 };
+
+// TEMP TEST
+
+game.entities.player.addSeed(
+  new Seed(
+    1,
+    new Tree(0, 0, 30, 30, 100, 0, 30, true, [
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+      new Wood(0, 0, 20, 20, 'brown', 100, true),
+    ]),
+  ),
+);
 
 // WORLD setup
 const worldObjects = {
@@ -57,11 +98,20 @@ const worldObjects = {
 const contextMenus = {
   player: {
     contextMenu: new ContextMenu(100, 50),
-    inventory: {
+    wood: {
+      contextMenu: new ContextMenu(90, 50),
+    },
+    seeds: {
+      contextMenu: new ContextMenu(90, 50),
+    },
+    equipment: {
       contextMenu: new ContextMenu(90, 50),
     },
   },
   tree: {
+    contextMenu: new ContextMenu(100, 50),
+  },
+  wood: {
     contextMenu: new ContextMenu(100, 50),
   },
 };
@@ -83,8 +133,6 @@ const overlayButton = {
       contextMenus.player.contextMenu.setManipulatedObj(game.entities.player);
       contextMenus.player.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
     },
-    '',
-    'white',
   ),
 
   trees: [],
@@ -101,10 +149,13 @@ const contextMenuButtons = {
         50,
         true,
         contextMenus.player.contextMenu,
-        [],
+        [contextMenus.player.wood.contextMenu],
         () => {},
         () => {},
-        () => {},
+        () => {
+          contextMenus.player.wood.contextMenu.setManipulatedObj(game.entities.player);
+          contextMenus.player.wood.contextMenu.show(controller.mouseX, controller.mouseY);
+        },
         'WOOD',
       ),
       new ContextMenuButton(
@@ -114,13 +165,224 @@ const contextMenuButtons = {
         50,
         true,
         contextMenus.player.contextMenu,
-        [],
+        [contextMenus.player.seeds.contextMenu],
         () => {},
         () => {},
-        () => {},
+        () => {
+          contextMenus.player.seeds.contextMenu.setManipulatedObj(game.entities.player);
+          contextMenus.player.seeds.contextMenu.show(controller.mouseX, controller.mouseY);
+        },
         'SEEDS',
       ),
     ],
+    wood: {
+      buttons: [
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.wood.contextMenu,
+          [],
+          () => {
+            // sells all wood in player inventory and shows message displaying how much money was gained
+            let totalWoodValue = 0;
+            for (let wood of game.entities.player.inventory.wood) {
+              totalWoodValue += wood.sellPrice;
+            }
+            game.addMoneyToPlayer(game.entities.player, totalWoodValue);
+            game.entities.player.inventoryClearAllWood();
+
+            let message = messages.sellWood(totalWoodValue);
+            game.entities.player.showMessage(
+              message.text,
+              message.displayTimeSeconds,
+              message.color.r,
+              message.color.g,
+              message.color.b,
+            );
+          },
+          () => {},
+          () => {},
+          'SELL',
+        ),
+      ],
+    },
+    seeds: {
+      buttons: [
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.seeds.contextMenu,
+          [],
+          () => {
+            // if player still has grade1 seed then it is removed and a tree is planted at player location if there is no other tree blocking
+            let grade1Seed = game.entities.player.removeSeedGrade(1);
+            if (grade1Seed) {
+              addTreeToGame(grade1Seed.tree);
+
+              grade1Seed.tree.show(
+                game.entities.player.pos.x,
+                game.entities.player.pos.y,
+                game.gameYears,
+              );
+            } else {
+              let message = messages.insufficientSeeds('GRADE 1');
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          'Grade 1',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.seeds.contextMenu,
+          [],
+          () => {
+            // if player still has grade1 seed then it is removed and a tree is planted at player location if there is no other tree blocking
+            let grade2Seed = game.entities.player.removeSeedGrade(2);
+            if (grade2Seed) {
+              addTreeToGame(grade2Seed.tree);
+
+              grade2Seed.tree.show(
+                game.entities.player.pos.x,
+                game.entities.player.pos.y,
+                game.gameYears,
+              );
+            } else {
+              let message = messages.insufficientSeeds('GRADE 2');
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          'Grade 2',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.seeds.contextMenu,
+          [],
+          () => {
+            // if player still has grade1 seed then it is removed and a tree is planted at player location if there is no other tree blocking
+            let grade3Seed = game.entities.player.removeSeedGrade(3);
+            if (grade3Seed) {
+              addTreeToGame(grade3Seed.tree);
+
+              grade3Seed.tree.show(
+                game.entities.player.pos.x,
+                game.entities.player.pos.y,
+                game.gameYears,
+              );
+            } else {
+              let message = messages.insufficientSeeds('GRADE 3');
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          'Grade 3',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.seeds.contextMenu,
+          [],
+          () => {
+            // if player still has grade1 seed then it is removed and a tree is planted at player location if there is no other tree blocking
+            let grade4Seed = game.entities.player.removeSeedGrade(4);
+            if (grade4Seed) {
+              addTreeToGame(grade4Seed.tree);
+
+              grade4Seed.tree.show(
+                game.entities.player.pos.x,
+                game.entities.player.pos.y,
+                game.gameYears,
+              );
+            } else {
+              let message = messages.insufficientSeeds('GRADE 4');
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          'Grade 4',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.player.seeds.contextMenu,
+          [],
+          () => {
+            // if player still has grade1 seed then it is removed and a tree is planted at player location if there is no other tree blocking
+            let grade5Seed = game.entities.player.removeSeedGrade(5);
+            if (grade5Seed) {
+              addTreeToGame(grade5Seed.tree);
+
+              grade5Seed.tree.show(
+                game.entities.player.pos.x,
+                game.entities.player.pos.y,
+                game.gameYears,
+              );
+            } else {
+              let message = messages.insufficientSeeds('GRADE 5');
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          'Grade 5',
+        ),
+      ],
+    },
     equipment: {
       buttons: [
         new ContextMenuButton(
@@ -129,7 +391,7 @@ const contextMenuButtons = {
           50,
           50,
           true,
-          contextMenus.player.inventory.contextMenu,
+          contextMenus.player.equipment.contextMenu,
           [],
           () => {},
           () => {},
@@ -158,6 +420,25 @@ const contextMenuButtons = {
       ),
     ],
   },
+  wood: {
+    buttons: [
+      new ContextMenuButton(
+        0,
+        0,
+        50,
+        50,
+        true,
+        contextMenus.wood.contextMenu,
+        [],
+        () => {
+          // TODO: add info window popup which can be dragged by mouse and closed (shows info like treeTypeName, age, lifePhase, woodValue, hp, etc.)
+        },
+        () => {},
+        () => {},
+        'INFO',
+      ),
+    ],
+  },
 };
 function addTreeToGame(tree) {
   // used to fill arrays of overlayButtons to match amount of corresponding Entities since the button always needs to have the same constructor
@@ -170,12 +451,13 @@ function addTreeToGame(tree) {
     tree,
     () => {
       if (tree.lifePhase == 0) {
+        let message = messages.treeTooYoung();
         game.entities.player.showMessage(
-          messages.treeTooYoung.text,
-          messages.treeTooYoung.displayTimeSeconds,
-          messages.treeTooYoung.color.r,
-          messages.treeTooYoung.color.g,
-          messages.treeTooYoung.color.b,
+          message.text,
+          message.displayTimeSeconds,
+          message.color.r,
+          message.color.g,
+          message.color.b,
         );
       }
       tree.getHarvestedTakeDamage(game.entities.player.damage);
@@ -199,18 +481,22 @@ function addTreeToGame(tree) {
       false,
       wood,
       () => {
+        let message = messages.collectWood();
         game.entities.player.showMessage(
-          messages.collectWood.text,
-          messages.collectWood.displayTimeSeconds,
-          messages.collectWood.color.r,
-          messages.collectWood.color.g,
-          messages.collectWood.color.b,
+          message.text,
+          message.displayTimeSeconds,
+          message.color.r,
+          message.color.g,
+          message.color.b,
         );
         wood.hide();
         game.entities.player.collectWood(wood);
       },
       () => {},
-      () => {},
+      () => {
+        contextMenus.wood.contextMenu.setManipulatedObj(wood);
+        contextMenus.wood.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+      },
     );
     overlayButton.wood.push(woodOverlayButton);
     game.addOverlayButton(woodOverlayButton);
@@ -238,17 +524,36 @@ function loadEntities() {
   }
   for (let button of contextMenuButtons.player.equipment.buttons) {
     game.addContextMenuButton(button);
-    contextMenus.player.inventory.contextMenu.addButton(button);
+    contextMenus.player.equipment.contextMenu.addButton(button);
   }
+
+  for (let button of contextMenuButtons.player.wood.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.player.wood.contextMenu.addButton(button);
+  }
+
+  for (let button of contextMenuButtons.player.seeds.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.player.seeds.contextMenu.addButton(button);
+  }
+
   for (let button of contextMenuButtons.tree.buttons) {
     game.addContextMenuButton(button);
     contextMenus.tree.contextMenu.addButton(button);
   }
 
+  for (let button of contextMenuButtons.wood.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.wood.contextMenu.addButton(button);
+  }
+
   // CONTEXT MENUS
-  game.addContextMenu(contextMenus.player.inventory.contextMenu);
+  game.addContextMenu(contextMenus.player.seeds.contextMenu);
+  game.addContextMenu(contextMenus.player.wood.contextMenu);
+  game.addContextMenu(contextMenus.player.equipment.contextMenu);
   game.addContextMenu(contextMenus.player.contextMenu);
   game.addContextMenu(contextMenus.tree.contextMenu);
+  game.addContextMenu(contextMenus.wood.contextMenu);
 }
 loadEntities();
 
@@ -327,7 +632,7 @@ function update() {
   // trees
 
   for (let tree of game.entities.trees) {
-    if (game.gameYears - tree.age >= 1) {
+    if (game.gameYears - tree.shownSinceYear - tree.age >= 1 && !tree.isHidden) {
       tree.gainAge();
     }
   }
@@ -468,9 +773,6 @@ function update() {
   game.update();
 }
 
-// TEST TEMP
-game.entities.player.showMessage('test test test', 5, 0, 200, 20);
-
 function render() {
   display.background('rgba(32, 219, 29)', 'rgb(38, 128, 237)');
 
@@ -479,7 +781,7 @@ function render() {
       //tree body
       display.fillRect(tree.pos.x, tree.pos.y, tree.width, tree.height, tree.activeColor);
 
-      //hp bar-
+      //hp bar
       display.drawRectWithOutlineInside(
         tree.hpBar.pos.x,
         tree.hpBar.pos.y,
@@ -600,24 +902,14 @@ function render() {
     // displays messages for player
 
     // WARNING: if color of message matches background color too closely it wont be visible since it will just blend in
-    let maxWidth = game.entities.player.width >= 100 ? game.entities.player.width : 100;
     let messageYOffsetPX = 30;
     let messageCounter = 0;
     for (let i = game.entities.player.currentlyDisplayedMessages.length - 1; i >= 0; i--) {
-      display.fillText(
+      display.fillTextNoMaxWidth(
         game.entities.player.currentlyDisplayedMessages[i].text,
         game.entities.player.pos.x + game.entities.player.width / 2,
         game.entities.player.pos.y - 10 - messageYOffsetPX * messageCounter,
-        maxWidth,
-        'rgba(' +
-          game.entities.player.currentlyDisplayedMessages[i].color.r +
-          ', ' +
-          game.entities.player.currentlyDisplayedMessages[i].color.g +
-          ', ' +
-          game.entities.player.currentlyDisplayedMessages[i].color.b +
-          ',' +
-          game.entities.player.currentlyDisplayedMessages[i].color.a +
-          ')',
+        `rgba(${game.entities.player.currentlyDisplayedMessages[i].color.r}, ${game.entities.player.currentlyDisplayedMessages[i].color.g}, ${game.entities.player.currentlyDisplayedMessages[i].color.b},${game.entities.player.currentlyDisplayedMessages[i].color.a})`,
         17,
         'px',
         'sans-serif',

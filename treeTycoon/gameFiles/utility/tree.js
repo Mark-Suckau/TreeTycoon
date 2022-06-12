@@ -32,6 +32,7 @@ class Tree {
     // max lifePhase is determined by number of colors inside ageColors since each lifePhase has a different color
     this.isDead = false;
     this.isHidden = isHidden; // whether or not this tree should be displayed while rendering
+    this.shownSinceYear = 0; // starting which year this tree has been shown (to calculate age properly)
 
     this.hpBar = {
       pos: new Vector(x + width * 0.1, y - 15),
@@ -69,13 +70,13 @@ class Tree {
     this.hide();
   }
 
-  show(x, y) {
+  show(x, y, gameYear) {
     this.pos.x = x;
     this.pos.y = y;
 
-    this.hpBar.pos.x = this.x + this.width / 10;
-    this.hpBar.pos.y = this.y + 15;
+    this.hpBar.pos = new Vector(this.pos.x + this.width * 0.1, this.pos.y - 15);
 
+    this.shownSinceYear = gameYear;
     this.isHidden = false;
   }
 

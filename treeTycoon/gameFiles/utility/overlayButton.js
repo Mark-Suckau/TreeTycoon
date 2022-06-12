@@ -19,7 +19,7 @@ class OverlayButton extends Button {
     textSizeUnit = 'px',
     textFontFamily = 'sans-serif',
     defaultColor = 'rgba(0, 0, 0, 0)',
-    mouseOverColor = 'rgba(0, 200, 0, 0.4)',
+    mouseOverColor = 'rgba(0, 200, 0, 0.5)',
   ) {
     super(
       x,

@@ -30,6 +30,10 @@ class Player {
     this.inventory.seeds.push(seed);
   }
 
+  loseMoney(amount) {
+    this.money -= amount;
+  }
+
   removeSeedGrade(seedGrade) {
     // removes one seed of specified seedGrade from inventory
     let seedFound = undefined;
@@ -37,6 +41,7 @@ class Player {
       if (this.inventory.seeds[i].grade == seedGrade) {
         seedFound = this.inventory.seeds[i];
         this.inventory.seeds.splice(i, 1);
+        break;
       }
     }
     return seedFound;
@@ -58,7 +63,7 @@ class Player {
     this.currentlyDisplayedMessages.push(message);
   }
 
-  collectWood(wood) {
+  gainWood(wood) {
     this.inventory.wood.push(wood);
   }
 

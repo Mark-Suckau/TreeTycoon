@@ -1,3 +1,6 @@
+// TODO: make it so that when planting trees you cant plan one tree ontop of another already planted tree
+// TODO: add showMessages to trees as well to allow for displaying how much damage was done
+
 const world1 = new World(800, 800); // TEMP
 const game = new Game(new Player(190, 190, 20, 20, 5, 100, 100), world1, new GameTime(0.5)); // TEMP (change GameTime param to 1)
 
@@ -28,7 +31,7 @@ const messages = {
     return { text, displayTimeSeconds, color };
   },
   // for when player is attempting to harvest a tree that is too young so it will not drop wood
-  collectWood: function (
+  gainWood: function (
     text = '+1 WOOD',
     displayTimeSeconds = 1,
     color = {
@@ -40,8 +43,8 @@ const messages = {
     return { text, displayTimeSeconds, color };
   },
 
-  sellWood: function (
-    totalWoodValue = 0,
+  gainSeed: function (
+    seedGrade = 'Grade 1',
     displayTimeSeconds = 1,
     color = {
       r: 0,
@@ -49,7 +52,58 @@ const messages = {
       b: 0,
     },
   ) {
-    let text = '+' + totalWoodValue;
+    let text = `+1 ${seedGrade} seed`;
+    return { text, displayTimeSeconds, color };
+  },
+
+  loseSeed: function (
+    seedGrade = 'Grade 1',
+    displayTimeSeconds = 1,
+    color = {
+      r: 255,
+      g: 0,
+      b: 0,
+    },
+  ) {
+    let text = `-1 ${seedGrade} seed`;
+    return { text, displayTimeSeconds, color };
+  },
+
+  gainMoney: function (
+    moneyGained = 0,
+    displayTimeSeconds = 1,
+    color = {
+      r: 0,
+      g: 255,
+      b: 0,
+    },
+  ) {
+    let text = '+$' + moneyGained;
+    return { text, displayTimeSeconds, color };
+  },
+
+  loseMoney: function (
+    moneyLost = 0,
+    displayTimeSeconds = 1,
+    color = {
+      r: 255,
+      g: 0,
+      b: 0,
+    },
+  ) {
+    let text = '-$' + moneyLost;
+    return { text, displayTimeSeconds, color };
+  },
+
+  insufficientFunds: function (
+    text = 'INSUFFICIENT FUNDS',
+    displayTimeSeconds = 1,
+    color = {
+      r: 255,
+      g: 0,
+      b: 0,
+    },
+  ) {
     return { text, displayTimeSeconds, color };
   },
 
@@ -58,25 +112,122 @@ const messages = {
     displayTimeSeconds = 1,
     color = { r: 255, g: 0, b: 0 },
   ) {
+    let text = 'INSUFFICIENT ' + seedTypeName + ' SEEDS';
     return {
-      text: 'INSUFFICIENT ' + seedTypeName + ' SEEDS',
+      text,
       displayTimeSeconds,
       color,
     };
   },
 };
 
-// TEMP TEST
+// SHOP
+const shop = {
+  // UPGRADES
+  upgrades: {
+    damagePlus1: new Upgrade(20, 0, 1.1),
+  },
 
-game.entities.player.addSeed(
-  new Seed(
-    1,
-    new Tree(0, 0, 30, 30, 100, 0, 30, true, [
-      new Wood(0, 0, 20, 20, 'brown', 100, true),
-      new Wood(0, 0, 20, 20, 'brown', 100, true),
-    ]),
-  ),
-);
+  // SEEDS
+  // (when buying seeds, a copy first needs to be made of the seed and then inserted into player inventory)
+  // WARNING: if tree isHidden is set to false when it is first declared, it will still age regardless of being added to the game or visible
+  seeds: {
+    grade1: {
+      seed: new Seed(
+        1,
+        new Tree(0, 0, 30, 30, 100, 0, 30, true, [
+          new Wood(0, 0, 20, 20, 'brown', 100, true),
+          new Wood(0, 0, 20, 20, 'brown', 100, true),
+        ]),
+      ),
+      cost: 10,
+    },
+    grade2: {
+      seed: new Seed(
+        2,
+        new Tree(0, 0, 30, 30, 200, 0, 30, true, [
+          new Wood(0, 0, 20, 20, 'brown', 130, true),
+          new Wood(0, 0, 20, 20, 'brown', 130, true),
+        ]),
+      ),
+      cost: 20,
+    },
+    grade3: {
+      seed: new Seed(
+        3,
+        new Tree(0, 0, 30, 30, 350, 0, 30, true, [
+          new Wood(0, 0, 20, 20, 'brown', 200, true),
+          new Wood(0, 0, 20, 20, 'brown', 200, true),
+        ]),
+      ),
+      cost: 30,
+    },
+    grade4: {
+      seed: new Seed(
+        4,
+        new Tree(0, 0, 30, 30, 500, 0, 30, true, [
+          new Wood(0, 0, 20, 20, 'brown', 300, true),
+          new Wood(0, 0, 20, 20, 'brown', 300, true),
+        ]),
+      ),
+      cost: 40,
+    },
+    grade5: {
+      seed: new Seed(
+        5,
+        new Tree(
+          0,
+          0,
+          30,
+          30,
+          800,
+          0,
+          30,
+          true,
+          [
+            new Wood(0, 0, 20, 20, 'brown', 400, true),
+            new Wood(0, 0, 20, 20, 'brown', 400, true),
+            new Wood(0, 0, 20, 20, 'brown', 400, true),
+          ],
+          ['rgb(155,128,136)', 'rgb(114,88,96)', 'rgb(43,27,34)', 'rgb(189, 139, 40)'],
+        ),
+      ),
+      cost: 50,
+    },
+  },
+};
+
+function copySeed(seed) {
+  // used to copy a seed from the shop in order for it to be used to give to player inventory
+  let newWoodArray = [];
+  for (let wood of seed.tree.woodArray) {
+    newWoodArray.push(
+      new Wood(
+        wood.pos.x,
+        wood.pos.y,
+        wood.width,
+        wood.height,
+        wood.activeColor,
+        wood.sellPrice,
+        wood.isHidden,
+      ),
+    );
+  }
+  let newTree = new Tree(
+    seed.tree.pos.x,
+    seed.tree.pos.y,
+    seed.tree.width,
+    seed.tree.height,
+    seed.tree.hp,
+    seed.tree.age,
+    seed.tree.lifespan,
+    seed.tree.isHidden,
+    newWoodArray,
+    seed.tree.ageColors,
+  );
+  let newSeed = new Seed(seed.grade, newTree);
+  return newSeed;
+}
 
 // WORLD setup
 const worldObjects = {
@@ -104,9 +255,6 @@ const contextMenus = {
     seeds: {
       contextMenu: new ContextMenu(90, 50),
     },
-    equipment: {
-      contextMenu: new ContextMenu(90, 50),
-    },
   },
   tree: {
     contextMenu: new ContextMenu(100, 50),
@@ -114,10 +262,42 @@ const contextMenus = {
   wood: {
     contextMenu: new ContextMenu(100, 50),
   },
+  shop: {
+    contextMenu: new ContextMenu(100, 50),
+    upgrades: {
+      contextMenu: new ContextMenu(120, 50),
+    },
+    seeds: {
+      contextMenu: new ContextMenu(120, 50),
+    },
+  },
 };
 // buttons not in a contextMenu or as an overlay
-const standardButton = {}; // NOTE: currently unused could be good idea in future for general menu
+const standaloneButtons = {
+  shop: new StandaloneButton(
+    10,
+    10,
+    100,
+    50,
+    false,
+    () => {},
+    () => {},
+    () => {
+      contextMenus.shop.contextMenu.show(controller.mouseX, controller.mouseY, game.frameCount);
+    },
+    'SHOP',
+    'rgb(0, 0, 0)',
+    'darkgreen',
+    'green',
+    true,
+    false,
+    'rgb(0, 0, 0)',
+    5,
+  ),
+}; // NOTE: currently unused could be good idea in future for general menu
 // buttons that will be overlayed ontop of normal game objects to make them clickable
+// WARNING: when setting up new buttons which open new contextMenus, make sure to include game.frameCount when using contextMenu.show() else the contextMenu will appear below the last contextMenu
+
 const overlayButton = {
   // button overlay for player
   player: new OverlayButton(
@@ -154,9 +334,13 @@ const contextMenuButtons = {
         () => {},
         () => {
           contextMenus.player.wood.contextMenu.setManipulatedObj(game.entities.player);
-          contextMenus.player.wood.contextMenu.show(controller.mouseX, controller.mouseY);
+          contextMenus.player.wood.contextMenu.show(
+            controller.mouseX,
+            controller.mouseY,
+            game.frameCount,
+          );
         },
-        'WOOD',
+        'Wood',
       ),
       new ContextMenuButton(
         0,
@@ -170,9 +354,13 @@ const contextMenuButtons = {
         () => {},
         () => {
           contextMenus.player.seeds.contextMenu.setManipulatedObj(game.entities.player);
-          contextMenus.player.seeds.contextMenu.show(controller.mouseX, controller.mouseY);
+          contextMenus.player.seeds.contextMenu.show(
+            controller.mouseX,
+            controller.mouseY,
+            game.frameCount,
+          );
         },
-        'SEEDS',
+        'Seeds',
       ),
     ],
     wood: {
@@ -194,7 +382,7 @@ const contextMenuButtons = {
             game.addMoneyToPlayer(game.entities.player, totalWoodValue);
             game.entities.player.inventoryClearAllWood();
 
-            let message = messages.sellWood(totalWoodValue);
+            let message = messages.gainMoney(totalWoodValue);
             game.entities.player.showMessage(
               message.text,
               message.displayTimeSeconds,
@@ -205,7 +393,7 @@ const contextMenuButtons = {
           },
           () => {},
           () => {},
-          'SELL',
+          'Sell',
         ),
       ],
     },
@@ -383,23 +571,6 @@ const contextMenuButtons = {
         ),
       ],
     },
-    equipment: {
-      buttons: [
-        new ContextMenuButton(
-          0,
-          0,
-          50,
-          50,
-          true,
-          contextMenus.player.equipment.contextMenu,
-          [],
-          () => {},
-          () => {},
-          () => {},
-          'TestEquipmentItem',
-        ),
-      ],
-    },
   },
   tree: {
     buttons: [
@@ -438,6 +609,284 @@ const contextMenuButtons = {
         'INFO',
       ),
     ],
+  },
+  shop: {
+    buttons: [
+      new ContextMenuButton(
+        0,
+        0,
+        50,
+        50,
+        true,
+        contextMenus.shop.contextMenu,
+        [contextMenus.shop.upgrades.contextMenu],
+        () => {},
+        () => {},
+        () => {
+          contextMenus.shop.upgrades.contextMenu.show(
+            controller.mouseX,
+            controller.mouseY,
+            game.frameCount,
+          );
+        },
+        'Upgrades',
+      ),
+      new ContextMenuButton(
+        0,
+        0,
+        50,
+        50,
+        true,
+        contextMenus.shop.contextMenu,
+        [contextMenus.shop.seeds.contextMenu],
+        () => {},
+        () => {},
+        () => {
+          contextMenus.shop.seeds.contextMenu.show(
+            controller.mouseX,
+            controller.mouseY,
+            game.frameCount,
+          );
+        },
+        'Seeds',
+      ),
+    ],
+    upgrades: {
+      buttons: [
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.upgrades.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.upgrades.damagePlus1.cost) {
+              game.entities.player.loseMoney(shop.upgrades.damagePlus1.cost);
+
+              game.entities.player.damage++;
+              shop.upgrades.damagePlus1.levelUp();
+
+              let message = messages.loseMoney(shop.upgrades.damagePlus1.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Damage',
+        ),
+      ],
+    },
+    seeds: {
+      buttons: [
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.seeds.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.seeds.grade1.cost) {
+              game.entities.player.loseMoney(shop.seeds.grade1.cost);
+
+              let seed = copySeed(shop.seeds.grade1.seed);
+              game.entities.player.addSeed(seed);
+
+              let message = messages.loseMoney(shop.seeds.grade1.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Grade 1',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.seeds.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.seeds.grade2.cost) {
+              game.entities.player.loseMoney(shop.seeds.grade2.cost);
+
+              let seed = copySeed(shop.seeds.grade2.seed);
+              game.entities.player.addSeed(seed);
+
+              let message = messages.loseMoney(shop.seeds.grade2.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Grade 2',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.seeds.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.seeds.grade3.cost) {
+              game.entities.player.loseMoney(shop.seeds.grade3.cost);
+
+              let seed = copySeed(shop.seeds.grade3.seed);
+              game.entities.player.addSeed(seed);
+
+              let message = messages.loseMoney(shop.seeds.grade3.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Grade 3',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.seeds.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.seeds.grade4.cost) {
+              game.entities.player.loseMoney(shop.seeds.grade4.cost);
+
+              let seed = copySeed(shop.seeds.grade4.seed);
+              game.entities.player.addSeed(seed);
+
+              let message = messages.loseMoney(shop.seeds.grade4.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Grade 4',
+        ),
+        new ContextMenuButton(
+          0,
+          0,
+          50,
+          50,
+          true,
+          contextMenus.shop.seeds.contextMenu,
+          [],
+          () => {
+            if (game.entities.player.money >= shop.seeds.grade5.cost) {
+              game.entities.player.loseMoney(shop.seeds.grade5.cost);
+
+              let seed = copySeed(shop.seeds.grade5.seed);
+              game.entities.player.addSeed(seed);
+
+              let message = messages.loseMoney(shop.seeds.grade5.cost);
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            } else {
+              let message = messages.insufficientFunds();
+              game.entities.player.showMessage(
+                message.text,
+                message.displayTimeSeconds,
+                message.color.r,
+                message.color.g,
+                message.color.b,
+              );
+            }
+          },
+          () => {},
+          () => {},
+          '+1 Grade 5',
+        ),
+      ],
+    },
   },
 };
 function addTreeToGame(tree) {
@@ -481,7 +930,7 @@ function addTreeToGame(tree) {
       false,
       wood,
       () => {
-        let message = messages.collectWood();
+        let message = messages.gainWood();
         game.entities.player.showMessage(
           message.text,
           message.displayTimeSeconds,
@@ -490,7 +939,7 @@ function addTreeToGame(tree) {
           message.color.b,
         );
         wood.hide();
-        game.entities.player.collectWood(wood);
+        game.entities.player.gainWood(wood);
       },
       () => {},
       () => {
@@ -513,18 +962,21 @@ function loadEntities() {
   }
 
   // BUTTONS
+
+  // standalone buttons
+
+  game.addStandaloneButton(standaloneButtons.shop);
+
   // overlay buttons
 
   game.addOverlayButton(overlayButton.player);
 
   // context menu buttons
+
+  // player
   for (let button of contextMenuButtons.player.buttons) {
     game.addContextMenuButton(button);
     contextMenus.player.contextMenu.addButton(button);
-  }
-  for (let button of contextMenuButtons.player.equipment.buttons) {
-    game.addContextMenuButton(button);
-    contextMenus.player.equipment.contextMenu.addButton(button);
   }
 
   for (let button of contextMenuButtons.player.wood.buttons) {
@@ -537,23 +989,45 @@ function loadEntities() {
     contextMenus.player.seeds.contextMenu.addButton(button);
   }
 
+  // trees
   for (let button of contextMenuButtons.tree.buttons) {
     game.addContextMenuButton(button);
     contextMenus.tree.contextMenu.addButton(button);
   }
 
+  // wood
   for (let button of contextMenuButtons.wood.buttons) {
     game.addContextMenuButton(button);
     contextMenus.wood.contextMenu.addButton(button);
   }
 
+  // shop
+  for (let button of contextMenuButtons.shop.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.shop.contextMenu.addButton(button);
+  }
+
+  for (let button of contextMenuButtons.shop.upgrades.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.shop.upgrades.contextMenu.addButton(button);
+  }
+
+  for (let button of contextMenuButtons.shop.seeds.buttons) {
+    game.addContextMenuButton(button);
+    contextMenus.shop.seeds.contextMenu.addButton(button);
+  }
+
   // CONTEXT MENUS
   game.addContextMenu(contextMenus.player.seeds.contextMenu);
   game.addContextMenu(contextMenus.player.wood.contextMenu);
-  game.addContextMenu(contextMenus.player.equipment.contextMenu);
   game.addContextMenu(contextMenus.player.contextMenu);
+
   game.addContextMenu(contextMenus.tree.contextMenu);
   game.addContextMenu(contextMenus.wood.contextMenu);
+
+  game.addContextMenu(contextMenus.shop.upgrades.contextMenu);
+  game.addContextMenu(contextMenus.shop.seeds.contextMenu);
+  game.addContextMenu(contextMenus.shop.contextMenu);
 }
 loadEntities();
 
@@ -670,6 +1144,7 @@ function update() {
 
   // checkMouseOver for context menus
   let mouseOverContextMenus = []; // keeps track of all not hidden context menus in this frame that have the mouse over them
+  let disableMouseOverStandaloneButtons = false; // if any contextMenus have mouseOver, any standaloneButtons with mouseOver true will have mouseOver set to false
   for (let contextMenu of game.clickables.contextMenus) {
     if (!contextMenu.isHidden) {
       contextMenu.checkMouseOver(
@@ -682,6 +1157,7 @@ function update() {
       );
       if (contextMenu.isMouseOver) {
         mouseOverContextMenus.push(contextMenu);
+        disableMouseOverStandaloneButtons = true;
       }
     } else {
       contextMenu.confirmMouseOver(false);
@@ -729,8 +1205,10 @@ function update() {
     }
   }
   for (let button of game.clickables.standaloneButtons) {
-    // NOTE: contextMenu must have mouseOver in order for this button to check if it itself has mouseOver
-    if (!button.isHidden) {
+    // NOTE: all contextMenus take prescedence over all standaloneButtons,
+    // meaning if a contextMenu and a standaloneButton both have mouseOver,
+    // the standaloneButton will have mouseOver set to false
+    if (!button.isHidden && !disableMouseOverStandaloneButtons) {
       button.checkMouseOver(
         controller.mouseX,
         controller.mouseY,
@@ -745,9 +1223,6 @@ function update() {
     }
   }
   for (let button of game.clickables.overlayButtons) {
-    // NOTE: all contextMenus take prescedence over all standaloneButtons,
-    // meaning if a contextMenu and a standaloneButton both have mouseOver,
-    // the standaloneButton will have mouseOver set to false
     if (!button.isHidden && mouseOverContextMenus.length == 0) {
       const visualDimensions = display.camera.getRectVisualDimensions(
         button.pos.x,
@@ -1016,6 +1491,20 @@ function render() {
       }
     }
   }
+
+  // displaying player money
+  display.fillTextCanvas(
+    '$' + game.entities.player.money,
+    game.world.width - 100,
+    50,
+    100,
+    'rgb(0, 255, 0)',
+    20,
+    'px',
+    'sans-serif',
+    'center',
+    'middle',
+  );
 }
 function gameLoop() {
   update();

@@ -115,6 +115,10 @@ class ContextMenu {
 
   show(x, y, frameCount) {
     // x, y for starting position of top left corner of the context menu (ex. mouse x, y when right clicking)
+    if (!frameCount) {
+      console.error('WARNING: frameCount not supplied');
+    }
+
     this.pos.x = x;
     this.pos.y = y;
     for (let i = 0; i < this.buttons.length; i++) {

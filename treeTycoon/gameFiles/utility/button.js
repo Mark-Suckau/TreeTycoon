@@ -15,8 +15,8 @@ class Button {
     isOutlinedInside = false, // NOTE: only one or the other should be set as true, if both are true, outlineInside will be used
     isOutlinedOutside = false,
     outlineColor = '',
-    outlineWidth = '',
-    textSize = 10,
+    outlineWidth = '5',
+    textSize = 20,
     textSizeUnit = 'px',
     textFontFamily = 'sans-serif',
   ) {

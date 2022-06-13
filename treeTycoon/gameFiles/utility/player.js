@@ -1,5 +1,15 @@
 class Player {
-  constructor(x, y, width, height, speed, money, hp, isHidden = false) {
+  constructor(
+    x,
+    y,
+    width,
+    height,
+    speed,
+    money,
+    hp,
+    messageDisplayerObjInstance,
+    isHidden = false,
+  ) {
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
     this.speed = speed;
@@ -15,10 +25,11 @@ class Player {
     };
 
     this.damage = 10;
+    this.woodValueMultiplier = 1;
     this.money = money;
     this.hp = hp;
 
-    this.currentlyDisplayedMessages = [];
+    this.messageDisplayer = messageDisplayerObjInstance; // obj instance of messageDisplayer.js class
   }
 
   inventoryClearAllWood() {
@@ -26,7 +37,7 @@ class Player {
     this.inventory.wood = [];
   }
 
-  addSeed(seed) {
+  gainSeed(seed) {
     this.inventory.seeds.push(seed);
   }
 
@@ -47,22 +58,6 @@ class Player {
     return seedFound;
   }
 
-  showMessage(text, displayTimeSeconds, r, g, b) {
-    // displays a message above player head which will slowly fade away
-    let message = {
-      text: text,
-      color: {
-        r: r,
-        g: g,
-        b: b,
-        a: 1,
-      },
-      displayStartTimeStamp: Date.now(),
-      totalDisplayTimeSeconds: displayTimeSeconds,
-    };
-    this.currentlyDisplayedMessages.push(message);
-  }
-
   gainWood(wood) {
     this.inventory.wood.push(wood);
   }
@@ -74,24 +69,7 @@ class Player {
   }
 
   update() {
-    // messages
-    for (let i = 0; i < this.currentlyDisplayedMessages.length; i++) {
-      let timeSinceStartedDisplaying =
-        Date.now() - this.currentlyDisplayedMessages[i].displayStartTimeStamp;
-      // totalDisplayTimeSeconds * 1000 to convert to miliseconds
-      if (
-        timeSinceStartedDisplaying >=
-        this.currentlyDisplayedMessages[i].totalDisplayTimeSeconds * 1000
-      ) {
-        this.currentlyDisplayedMessages.splice(i, 1);
-      } else {
-        // calculates new alpha value based on how much remaining time until message disappears to allow it to fade away
-        let percentTimeGone =
-          timeSinceStartedDisplaying /
-          (this.currentlyDisplayedMessages[i].totalDisplayTimeSeconds * 1000);
-        this.currentlyDisplayedMessages[i].color.a = 1 - percentTimeGone;
-      }
-    }
+    this.messageDisplayer.update();
 
     // position
     this.pos.addV(this.vel);

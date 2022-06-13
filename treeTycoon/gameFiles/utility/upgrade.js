@@ -1,13 +1,16 @@
 class Upgrade {
   constructor(
+    name,
     cost,
-    level,
+    upgradeEffectCallback,
     costMulitplierPerLevel = 1.1,
     ExponentialCostIncrease = true,
     costIncreasePerLevel = 10,
   ) {
+    this.name = name; // used to display what this upgrade does on shop button
     this.cost = cost;
-    this.level = level;
+    this.level = 0;
+    this.upgradeEffectCallback = upgradeEffectCallback;
 
     // exponential cost increasing per level
     this.costMulitplierPerLevel = costMulitplierPerLevel;
@@ -18,6 +21,7 @@ class Upgrade {
   }
 
   levelUp() {
+    this.upgradeEffectCallback();
     this.level++;
 
     if (this.ExponentialCostIncrease) {

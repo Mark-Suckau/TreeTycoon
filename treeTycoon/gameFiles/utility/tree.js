@@ -24,6 +24,8 @@ class Tree {
     // since for each new ageColor there is another lifePhase and for each lifePhase it must drop another piece of wood but for first lifePhase no wood must be dropped so
     // therefore the woods array must only contain the amount of maximum lifePhases - 1)
 
+    this.messageDisplayer = new MessageDisplayer();
+
     this.activeColor = ageColors[0];
     this.ageColors = ageColors;
     this.lifePhase = 0; // integer which indicates which phase of life this tree is in
@@ -45,6 +47,10 @@ class Tree {
         'WARNING: The wood objects array must contain exactly one less wood object inside of woodArray as colors inside of ageColors, see commented explanation.',
       );
     }
+  }
+
+  update() {
+    this.messageDisplayer.update();
   }
 
   get hpBarWidth() {

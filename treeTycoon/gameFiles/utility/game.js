@@ -27,6 +27,41 @@ class Game {
     player.money += moneyAmount;
   }
 
+  checkRectForEntities(x, y, w, h) {
+    // checks a given rect at x , y with w, h if there are any entities (excluding player) intersecting
+    // used to check if a tree can be planted without intersecting with other trees or wood
+    let intersecting = false;
+    for (let tree of this.entities.trees) {
+      if (
+        !tree.isHidden &&
+        tree.pos.x + tree.width > x &&
+        tree.pos.x < x + w &&
+        tree.pos.y + tree.height > y &&
+        tree.pos.y < y + h
+      ) {
+        intersecting = true;
+        break;
+      }
+    }
+    if (intersecting) {
+      return true;
+    }
+    // continues checking if intersecting with wood if not intersecting any trees
+    for (let wood of this.entities.wood) {
+      if (
+        !wood.isHidden &&
+        wood.pos.x > x &&
+        wood.pos.x < x + w &&
+        wood.pos.y > y &&
+        wood.pos.y < y + h
+      ) {
+        intersecting = true;
+        break;
+      }
+    }
+    return intersecting;
+  }
+
   loadWorld(world) {
     this.world = world;
   }

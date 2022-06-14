@@ -116,7 +116,7 @@ const messages = {
     displayTimeSeconds = 1,
     color = { r: 255, g: 0, b: 0 },
   ) {
-    let text = 'INSUFFICIENT ' + seedTypeName + ' SEEDS';
+    let text = 'UNGENÜGEND ' + seedTypeName + ' SAMEN';
     return {
       text,
       displayTimeSeconds,
@@ -126,7 +126,7 @@ const messages = {
 
   // used for when planting a seed fails because the new tree would intersect either a tree or wood
   intersectingEntity: function (
-    text = 'INTERSECTING ENTITY',
+    text = 'ÜBERSCHNEIDET BAUM/HOLZ',
     displayTimeSeconds = 1,
     color = { r: 255, g: 0, b: 0 },
   ) {
@@ -810,7 +810,7 @@ const contextMenuButtons = {
           contextMenus.shop.seeds.contextMenu,
           [],
           () => {
-            buySeed(shop.seeds.grade3.seed, shop.seeds.grade2.cost);
+            buySeed(shop.seeds.grade3.seed, shop.seeds.grade3.cost);
           },
           () => {},
           () => {},

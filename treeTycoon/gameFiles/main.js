@@ -24,7 +24,7 @@ function switchWorld(world) {
 // to be displayed by player using player.showMessage() method
 const messages = {
   treeTooYoung: function (
-    text = 'TREE TOO YOUNG',
+    text = 'BAUM ZU JUNG',
     displayTimeSeconds = 1,
     color = {
       r: 255,
@@ -36,7 +36,7 @@ const messages = {
   },
   // for when player is attempting to harvest a tree that is too young so it will not drop wood
   gainWood: function (
-    text = '+1 WOOD',
+    text = '+1 HOLZ',
     displayTimeSeconds = 1,
     color = {
       r: 0,
@@ -100,7 +100,7 @@ const messages = {
   },
 
   insufficientFunds: function (
-    text = 'INSUFFICIENT FUNDS',
+    text = 'UNGENÜGEND GELD',
     displayTimeSeconds = 1,
     color = {
       r: 255,
